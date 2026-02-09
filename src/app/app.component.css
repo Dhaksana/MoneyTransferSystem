@@ -1,0 +1,39 @@
+/* Green themed header/footer */
+.app-header {
+  background: linear-gradient(90deg, #0f9d58, #0b7d46);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,.12);
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+
+.brand-dot {
+  width: 12px;
+  height: 12px;
+  background: #b7ffcf;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.app-main {
+  min-height: calc(100vh - 120px); /* header+footer space */
+  background: #f7fbf8;
+}
+
+.app-footer {
+  background: #0b7d46;
+  color: #eafff3;
+}
+
+/* Active link look */
+.active-link {
+  border: 1px solid #0b7d46 !important;
+  font-weight: 600;
+}
