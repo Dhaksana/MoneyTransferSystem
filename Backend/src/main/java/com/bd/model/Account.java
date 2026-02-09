@@ -1,113 +1,96 @@
 package com.bd.model;
 
+import java.time.LocalDateTime;
 
-import java.time.ZonedDateTime;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table (name="account-details")
+@Table(name = "accounts")
 public class Account {
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	int id;
-	@Column(name="holderName", nullable=false)
-	String holderName;
-	@Column(name="balance", nullable=false)
-	double balance;
-	@Column(name="status", nullable=false)
-	String status;
-	@Column(name="version", nullable=false)
-	String version;
-	@Column (name="lastUpdated", nullable=false)
-	ZonedDateTime lastUpdated;
-	
-	public Account(int id, String holderName, double balance, String status, String version,
-			ZonedDateTime lastUpdated) {
-		super();
-		this.id = id;
-		this.holderName = holderName;
-		this.balance = balance;
-		this.status = status;
-		this.version = version;
-		this.lastUpdated = lastUpdated;
-	}
-	
-	public Account() {
-		// TODO Auto-generated constructor stub
-	}
 
-	public int getId() {
-		return id;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    @Column(name = "holder_name", nullable = false)
+    private String holderName;
 
-	public String getHolderName() {
-		return holderName;
-	}
+    @Column(nullable = false)
+    private double balance;
 
-	public void setHolderName(String holderName) {
-		this.holderName = holderName;
-	}
+    @Column(nullable = false)
+    private String status;
 
-	public double getBalance() {
-		return balance;
-	}
+    @Version
+    private Integer version;
 
-	public void setBalance(double balance) {
-		this.balance = balance;
-	}
+    @Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
 
-	public String getStatus() {
-		return status;
-	}
+    public Account() {}
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    /* ✅ AUTOMATIC timestamp handling */
+    @PrePersist
+    public void onCreate() {
+        this.lastUpdated = LocalDateTime.now();
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    @PreUpdate
+    public void onUpdate() {
+        this.lastUpdated = LocalDateTime.now();
+    }
 
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
-	public ZonedDateTime getLastUpdated() {
-		return lastUpdated;
-	}
-
-	public void setLastUpdated(ZonedDateTime lastUpdated) {
-		this.lastUpdated = lastUpdated;
-	}
-
+    // ---------- business logic ----------
 	public void debit(double amount) {
-		if (this.balance< amount) {
-			System.out.println("Not possible");
+
+    if (!"ACTIVE".equals(this.status)) {
+        throw new IllegalStateException("Account is not ACTIVE");
+    }
+
+    if (amount <= 0) {
+        throw new IllegalArgumentException("Debit amount must be positive");
+    }
+
+    if (this.balance < amount) {
+        throw new IllegalStateException("Insufficient balance");
+    }
+
+    this.balance -= amount;
+    this.lastUpdated = LocalDateTime.now();
+	}
+
+	public void credit(double amount) {
+
+		if (!"ACTIVE".equals(this.status)) {
+			throw new IllegalStateException("Account is not ACTIVE");
 		}
-		else {
-			this.balance = this.balance - amount;
-			System.out.println("Success!!");
+
+		if (amount <= 0) {
+			throw new IllegalArgumentException("Credit amount must be positive");
 		}
-		
+
+		this.balance += amount;
+		this.lastUpdated = LocalDateTime.now();
 	}
-	public void credit() {
-	}
-	
-	public boolean isActive()  {
-		if (this.status == "ACTIVE") return true;
-		return false;
-	}
-	
-		
-		
+
+
+    public boolean isActive() {
+        return "ACTIVE".equalsIgnoreCase(this.status);
+    }
+
+    // ---------- getters & setters ----------
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
+
+    public String getHolderName() { return holderName; }
+    public void setHolderName(String holderName) { this.holderName = holderName; }
+
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public Integer getVersion() { return version; }
+    public LocalDateTime getLastUpdated() { return lastUpdated; }
 }

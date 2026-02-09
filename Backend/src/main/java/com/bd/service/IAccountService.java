@@ -4,8 +4,16 @@ import java.util.ArrayList;
 
 import com.bd.dto.AccountDTO;
 import com.bd.model.Account;
+import java.util.List;
+
 
 public interface IAccountService {
-	public AccountDTO createAccount(AccountDTO account);
 
+	AccountDTO createAccount(AccountDTO account);
+
+    AccountDTO getAccountById(Integer id);
+
+    Double getBalance(Integer id);
+
+    List<AccountDTO> getAllAccounts();
 }

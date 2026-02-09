@@ -1,29 +1,43 @@
 package com.bd.controller;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.bd.dto.AccountDTO;
-import com.bd.model.Account;
-import com.bd.service.AccountService;
 import com.bd.service.IAccountService;
 
 @RestController
+@RequestMapping("/api/v1/accounts")
 public class AccountController {
-	@Autowired
-	private final IAccountService accountService;
-	
-	public AccountController(IAccountService accountService) {
-		this.accountService = accountService;
-	}
-	
-	@PostMapping("/createAccount")
-	public AccountDTO createAccount(@RequestBody AccountDTO account) {
-		return accountService.createAccount(account);
-	}
 
+    private final IAccountService accountService;
+
+    public AccountController(IAccountService accountService) {
+        this.accountService = accountService;
+    }
+
+    // CREATE
+    @PostMapping
+    public AccountDTO createAccount(@RequestBody AccountDTO account) {
+        return accountService.createAccount(account);
+    }
+
+    // READ by ID
+    @GetMapping("/{id}")
+    public AccountDTO getAccountById(@PathVariable Integer id) {
+        return accountService.getAccountById(id);
+    }
+
+    // READ balance only
+    @GetMapping("/{id}/balance")
+    public Double getBalance(@PathVariable Integer id) {
+        return accountService.getBalance(id);
+    }
+
+    // READ all accounts
+    @GetMapping
+    public List<AccountDTO> getAllAccounts() {
+        return accountService.getAllAccounts();
+    }
 }
