@@ -1,5 +1,6 @@
 package com.bd.service;
 
+import com.bd.dto.TransactionHistoryDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +10,9 @@ import com.bd.model.Account;
 import com.bd.model.TransactionLog;
 import com.bd.repository.AccountRepository;
 import com.bd.repository.TransactionLogRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransferService implements ITransferService {
@@ -70,5 +74,23 @@ public class TransferService implements ITransferService {
             logRepo.save(log);
             throw e;
         }
+    }
+
+    // ---------------- TRANSACTION HISTORY ----------------
+    @Override
+    public List<TransactionHistoryDTO> getTransactionHistory(Integer accountId) {
+
+        return logRepo.findTransactionHistory(accountId)
+                .stream()
+                .map(t -> new TransactionHistoryDTO(
+                        t.getId(),
+                        t.getFromAccountId(),
+                        t.getToAccountId(),
+                        t.getAmount(),
+                        t.getStatus(),
+                        t.getFailureReason(),
+                        t.getCreatedOn()
+                ))
+                .collect(Collectors.toList());
     }
 }
