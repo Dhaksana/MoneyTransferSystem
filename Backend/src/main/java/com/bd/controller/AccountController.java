@@ -50,4 +50,10 @@ public class AccountController {
     public List<AccountDTO> getAllAccounts() {
         return accountService.getAllAccounts();
     }
+    // CHECK if account exists
+    @GetMapping("/exists/{id}")
+    public boolean accountExists(@PathVariable Integer id) {
+        return accountService.accountExists(id);
+    }
+
 }

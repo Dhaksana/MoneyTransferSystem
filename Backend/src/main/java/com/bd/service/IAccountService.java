@@ -16,4 +16,6 @@ public interface IAccountService {
     Double getBalance(Integer id);
 
     List<AccountDTO> getAllAccounts();
+    boolean accountExists(Integer id);
+
 }

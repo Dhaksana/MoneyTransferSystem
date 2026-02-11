@@ -45,4 +45,9 @@ public class AccountService implements IAccountService {
                 .map(AccountDTO::toDTO)
                 .collect(Collectors.toList());
     }
+    @Override
+    public boolean accountExists(Integer id) {
+        return accountRepo.existsById(id);
+    }
+
 }
