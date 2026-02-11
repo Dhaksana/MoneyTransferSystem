@@ -15,7 +15,7 @@ public class UserConfig {
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
 
         UserDetails user = User.builder()
-                .username("user1")
+                .username("Ram")
                 .password(encoder.encode("password123"))
                 .roles("USER")
                 .build();
