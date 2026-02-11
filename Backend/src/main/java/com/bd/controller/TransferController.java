@@ -10,6 +10,15 @@ import com.bd.service.ITransferService;
 import java.util.List;
 
 @RestController
+@CrossOrigin(
+        origins = "http://localhost:4200",
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+        allowCredentials = "true",   // only if you send cookies/Authorization header
+        maxAge = 3600,
+        exposedHeaders = {"Idempotency-Key"} // if you want FE to read this response header
+)
+
 @RequestMapping("/api/v1/transfers")
 public class TransferController {
 

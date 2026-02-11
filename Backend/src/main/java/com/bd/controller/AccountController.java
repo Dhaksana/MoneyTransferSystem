@@ -9,6 +9,16 @@ import com.bd.service.IAccountService;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
+
+@CrossOrigin(
+        origins = "http://localhost:4200",
+        allowedHeaders = "*",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+        allowCredentials = "true",   // only if you send cookies/Authorization header
+        maxAge = 3600,
+        exposedHeaders = {"Idempotency-Key"} // if you want FE to read this response header
+)
+
 public class AccountController {
 
     private final IAccountService accountService;
