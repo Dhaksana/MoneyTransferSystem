@@ -1,0 +1,31 @@
+<header class="app-header border-0">
+  <div class="container d-flex align-items-center justify-content-between py-3">
+    <div class="d-flex align-items-center gap-2">
+      <span class="brand-dot"></span>
+      <h1 class="app-title m-0">Favourite Company</h1>
+    </div>
+
+    <nav class="d-flex gap-2">
+      <a class="btn btn-light btn-sm" routerLink="/welcome" routerLinkActive="active-link">Welcome</a>
+      <a class="btn btn-light btn-sm" routerLink="/login" routerLinkActive="active-link" *ngIf="!(auth.isLoggedIn$ | async)">Login</a>
+
+      <ng-container *ngIf="auth.isLoggedIn$ | async">
+        <a class="btn btn-light btn-sm" routerLink="/profile" routerLinkActive="active-link">Profile</a>
+        <a class="btn btn-light btn-sm" routerLink="/transactions" routerLinkActive="active-link">History</a>
+        <a class="btn btn-light btn-sm" routerLink="/transfer" routerLinkActive="active-link">Transfer</a>
+        <button class="btn btn-outline-danger btn-sm" (click)="logout()">Logout</button>
+      </ng-container>
+    </nav>
+  </div>
+</header>
+
+<main class="app-main">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="app-footer mt-5">
+  <div class="container py-3 d-flex justify-content-between flex-wrap gap-2">
+    <span>© 2026 Favourite Company</span>
+    <span class="small opacity-75">Built with Angular 17 + Bootstrap</span>
+  </div>
+</footer>

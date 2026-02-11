@@ -1,0 +1,77 @@
+/* ===========================
+   Purple Themed Header/Footer
+   =========================== */
+
+/* HEADER */
+.app-header {
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.92), rgba(109, 40, 217, 0.92));
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: saturate(160%) blur(10px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Header Title */
+.app-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #fff;
+  font-family: Poppins, Inter, sans-serif;
+}
+
+/* Brand Dot */
+.brand-dot {
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed 60%, #4c1d95 100%);
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18);
+}
+
+/* MAIN AREA */
+.app-main {
+  min-height: calc(100vh - 120px);
+  padding-bottom: 2rem;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.10), transparent 60%),
+    radial-gradient(800px 400px at -10% 10%, rgba(167, 139, 250, 0.24), transparent 60%),
+    linear-gradient(180deg, #fff 0%, #f7f5ff 60%, #f4f1ff 100%);
+  position: relative;
+}
+
+/* Subtle grid background */
+.app-main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(76, 29, 149, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(76, 29, 149, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* FOOTER */
+.app-footer {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.20));
+  border-top: 1px solid rgba(124, 58, 237, 0.18);
+  color: #3b0764;
+  padding: 1rem 0;
+  backdrop-filter: blur(6px) saturate(180%);
+}
+
+/* Active link style */
+.active-link {
+  border: 1px solid #7c3aed !important;
+  color: #7c3aed !important;
+  background: rgba(124, 58, 237, 0.12) !important;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
+}

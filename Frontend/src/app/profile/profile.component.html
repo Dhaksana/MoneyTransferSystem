@@ -1,0 +1,33 @@
+
+
+<!-- Profile -->
+<div class="container py-5">
+  <h2 class="text-success fw-bold">Profile</h2>
+  <p class="lead">Welcome, {{ userName }} 🎉</p>
+
+  <p>
+    Bank balance:
+    <ng-container *ngIf="balance !== null; else dash">
+      {{ balance | currency:'INR':'symbol':'1.0-2' }}
+    </ng-container>
+    <ng-template #dash>—</ng-template>
+  </p>
+
+  <p>Account number: {{ acc }}</p>
+
+  <div class="d-flex gap-2 mt-3">
+    <a class="btn btn-primary"
+       [routerLink]="['/transactions']"
+       [queryParams]="{ accountId: acc }">
+      Transaction History
+    </a>
+
+    <a class="btn btn-outline-primary"
+       [routerLink]="['/transfer']"
+       [queryParams]="{ fromAccountId: acc }">
+      Transfer Money
+    </a>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert alert-danger mt-3">{{ errorMsg }}</div>
+</div>
