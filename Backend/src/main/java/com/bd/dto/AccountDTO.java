@@ -56,7 +56,9 @@ public class AccountDTO {
     public void setHolderName(String holderName) { this.holderName = holderName; }
 
     public double getBalance() { return balance; }
-    public void setBalance(double balance) { this.balance = balance; }
+    public void setBalance(double balance) {
+            throw new UnsupportedOperationException("Use debit/credit methods");
+    }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

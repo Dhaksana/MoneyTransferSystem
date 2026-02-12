@@ -1,18 +1,18 @@
 package com.bd.service;
 
-import com.bd.dto.TransactionHistoryDTO;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bd.dto.TransactionHistoryDTO;
 import com.bd.dto.TransferRequestDTO;
 import com.bd.dto.TransferResponseDTO;
 import com.bd.model.Account;
 import com.bd.model.TransactionLog;
 import com.bd.repository.AccountRepository;
 import com.bd.repository.TransactionLogRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TransferService implements ITransferService {
@@ -78,10 +78,14 @@ public class TransferService implements ITransferService {
 
         } catch (Exception e) {
 
-            // 🔹 Save failure log in separate transaction
+            // 🔹 Save failure log in separate transaction (don't let save errors override response)
             log.setStatus("FAILED");
             log.setFailureReason(e.getMessage());
-            failureLogService.saveFailureLog(log);
+            try {
+                failureLogService.saveFailureLog(log);
+            } catch (Exception ex) {
+                // ignore logging errors to ensure we return a controlled FAILED response
+            }
 
             // 🔹 Return FAILED response instead of throwing 500
             return new TransferResponseDTO(
