@@ -20,7 +20,7 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog, 
            OR t.toAccountId = :accountId
         ORDER BY t.createdOn DESC
     """)
-    List<TransactionLog> findTransactionHistory(
-            @Param("accountId") Integer accountId
-    );
+        List<TransactionLog> findTransactionHistory(
+            @Param("accountId") String accountId
+        );
 }

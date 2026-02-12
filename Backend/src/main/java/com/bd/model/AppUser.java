@@ -25,7 +25,7 @@ public class AppUser {
     private String role = "USER";
 
     // Optional link to an Account (bank account) to keep compatibility with existing LoginResponse
-    private Integer accountId;
+    private String accountId;
 
     private String displayName;
 
@@ -43,8 +43,8 @@ public class AppUser {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public Integer getAccountId() { return accountId; }
-    public void setAccountId(Integer accountId) { this.accountId = accountId; }
+    public String getAccountId() { return accountId; }
+    public void setAccountId(String accountId) { this.accountId = accountId; }
 
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }

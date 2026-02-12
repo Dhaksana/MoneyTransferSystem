@@ -34,9 +34,9 @@ public class TransferService implements ITransferService {
     public TransferResponseDTO transfer(TransferRequestDTO request) {
 
         // ✅ Create log immediately with request values
-        TransactionLog log = new TransactionLog();
-        log.setFromAccountId(request.getFromAccountId());
-        log.setToAccountId(request.getToAccountId());
+            TransactionLog log = new TransactionLog();
+            log.setFromAccountId(request.getFromAccountId());
+            log.setToAccountId(request.getToAccountId());
         log.setAmount(request.getAmount());
         log.setIdempotencyKey(request.getIdempotencyKey());
 
@@ -49,13 +49,13 @@ public class TransferService implements ITransferService {
                     });
 
             // 🔹 Fetch accounts
-            Account from = accountRepo.findById(request.getFromAccountId())
+                Account from = accountRepo.findById(request.getFromAccountId())
                     .orElseThrow(() -> new RuntimeException("From account not found"));
 
-            Account to = accountRepo.findById(request.getToAccountId())
+                Account to = accountRepo.findById(request.getToAccountId())
                     .orElseThrow(() -> new RuntimeException("To account not found"));
 
-            if (from.getId().equals(to.getId())) {
+                if (from.getId().equals(to.getId())) {
                 throw new IllegalArgumentException("Cannot transfer to same account");
             }
 
@@ -99,8 +99,7 @@ public class TransferService implements ITransferService {
     // ---------------- TRANSACTION HISTORY ----------------
 
     @Override
-    public List<TransactionHistoryDTO> getTransactionHistory(Integer accountId) {
-
+    public List<TransactionHistoryDTO> getTransactionHistory(String accountId) {
         return logRepo.findTransactionHistory(accountId)
                 .stream()
                 .map(t -> new TransactionHistoryDTO(

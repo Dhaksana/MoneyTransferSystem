@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotNull;
 public class TransferRequestDTO {
 
     @NotNull
-    private Integer fromAccountId;
+    private String fromAccountId;
 
     @NotNull
-    private Integer toAccountId;
+    private String toAccountId;
 
     @Min(1)
     private Double amount;
@@ -18,11 +18,11 @@ public class TransferRequestDTO {
     private String idempotencyKey;
 
     // getters & setters
-    public Integer getFromAccountId() { return fromAccountId; }
-    public void setFromAccountId(Integer fromAccountId) { this.fromAccountId = fromAccountId; }
+    public String getFromAccountId() { return fromAccountId; }
+    public void setFromAccountId(String fromAccountId) { this.fromAccountId = fromAccountId; }
 
-    public Integer getToAccountId() { return toAccountId; }
-    public void setToAccountId(Integer toAccountId) { this.toAccountId = toAccountId; }
+    public String getToAccountId() { return toAccountId; }
+    public void setToAccountId(String toAccountId) { this.toAccountId = toAccountId; }
 
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }

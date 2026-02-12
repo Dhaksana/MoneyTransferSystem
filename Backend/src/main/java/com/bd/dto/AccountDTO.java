@@ -9,7 +9,7 @@ import com.bd.model.Account;
 
 public class AccountDTO {
 
-    private Integer id;
+    private String id;
 
     @NotBlank(message = "Account name must not be blank")
     @Pattern(
@@ -42,6 +42,7 @@ public class AccountDTO {
     /* ---------- DTO → Entity ---------- */
     public static Account fromDTO(AccountDTO dto) {
         Account account = new Account();
+        account.setId(dto.id);
         account.setHolderName(dto.holderName);
         account.setBalance(dto.balance);
         account.setStatus(dto.status);
@@ -49,8 +50,8 @@ public class AccountDTO {
     }
 
     // getters & setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getHolderName() { return holderName; }
     public void setHolderName(String holderName) { this.holderName = holderName; }

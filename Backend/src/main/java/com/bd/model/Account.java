@@ -15,8 +15,8 @@ import jakarta.validation.constraints.Size;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(length = 64)
+    private String id;
 
     @NotBlank(message = "Holder name is required")
     @Size(min = 3, max = 50, message = "Holder name must be 3–50 characters")
@@ -93,8 +93,8 @@ public class Account {
     }
 
     // ---------- getters & setters ----------
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getHolderName() { return holderName; }
     public void setHolderName(String holderName) { this.holderName = holderName; }

@@ -13,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -52,7 +54,7 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(u.getUsername());
 
-        Integer accountId = u.getAccountId();
+        String accountId = u.getAccountId();
         String displayName = u.getDisplayName();
 
         return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(accountId, displayName)));
@@ -66,8 +68,9 @@ public class AuthService {
         if (username == null || rawPassword == null || holderName == null) return Optional.empty();
         if (users.findByUsername(username).isPresent()) return Optional.empty();
 
-        // Create bank Account
+        // Create bank Account with generated string id
         Account acc = new Account();
+        acc.setId(generateUniqueAccountId());
         acc.setHolderName(holderName);
         acc.setBalance(0.0);
         acc.setStatus("ACTIVE");
@@ -83,5 +86,20 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(u.getUsername());
         return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName)));
+    }
+
+    private final SecureRandom rnd = new SecureRandom();
+
+    private String generateUniqueAccountId() {
+        String candidate;
+        int attempts = 0;
+        do {
+            String year = String.valueOf(LocalDate.now().getYear());
+            int part = 10000000 + rnd.nextInt(90000000);
+            candidate = "MTS" + year + "-" + part;
+            attempts++;
+            if (attempts > 20) break;
+        } while (accounts.existsById(candidate));
+        return candidate;
     }
 }

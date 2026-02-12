@@ -16,14 +16,14 @@ public class LoginResponse {
     public UserInfo getUser() { return user; }
 
     public static class UserInfo {
-        private Integer id;
+        private String id;
         private String name;
 
-        public UserInfo(Integer id, String name) {
+        public UserInfo(String id, String name) {
             this.id = id;
             this.name = name;
         }
-        public Integer getId() { return id; }
+        public String getId() { return id; }
         public String getName() { return name; }
     }
 }

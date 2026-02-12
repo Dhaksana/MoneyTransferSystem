@@ -36,7 +36,7 @@ public class TransferController {
 
     // ✅ GET /api/v1/transfers/history/{accountId}
     @GetMapping("/history/{accountId}")
-    public List<TransactionHistoryDTO> history(@PathVariable Integer accountId) {
+    public List<TransactionHistoryDTO> history(@PathVariable String accountId) {
         return transferService.getTransactionHistory(accountId);
     }
 }
