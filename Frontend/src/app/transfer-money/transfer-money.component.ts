@@ -18,24 +18,22 @@ import { AuthService } from '../services/auth.service';
 
     <form #f="ngForm" (ngSubmit)="submit(f)" class="card p-3 shadow-soft">
       <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label">From Account ID</label>
-          <input class="form-control"
-                 type="number"
-                 name="fromAccountId"
-                 [(ngModel)]="fromAccountId"
-                 required
-                 min="1" />
-        </div>
+          <div class="col-md-4">
+            <label class="form-label">From Account ID</label>
+            <input class="form-control"
+                   type="text"
+                   name="fromAccountId"
+                   [(ngModel)]="fromAccountId"
+                   required />
+          </div>
 
         <div class="col-md-4">
           <label class="form-label">To Account ID</label>
           <input class="form-control"
-                 type="number"
+                 type="text"
                  name="toAccountId"
                  [(ngModel)]="toAccountId"
-                 required
-                 min="1" />
+                 required />
         </div>
 
         <div class="col-md-4">
@@ -47,18 +45,6 @@ import { AuthService } from '../services/auth.service';
                  step="0.01"
                  required
                  min="0.01" />
-        </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-md-6">
-          <label class="form-label">Idempotency Key (optional)</label>
-          <input class="form-control"
-                 type="text"
-                 name="idempotencyKey"
-                 [(ngModel)]="idempotencyKey"
-                 placeholder="Leave empty to auto-generate" />
-          <div class="form-text">Use the same key to safely retry without duplicating the transaction.</div>
         </div>
       </div>
 
@@ -91,14 +77,14 @@ export class TransferMoneyComponent {
     private route: ActivatedRoute,
     private auth: AuthService
   ) {
-    // Prefer query param; fallback to logged-in user's account id; then 1 as last resort
-    const qp = Number(this.route.snapshot.queryParamMap.get('fromAccountId') ?? 'NaN');
-    const authId = this.auth.userId ?? NaN;
-    this.fromAccountId = Number.isFinite(qp) ? qp : (Number.isFinite(authId) ? authId : 1);
+    // Prefer query param; fallback to logged-in user's account id; then empty string as last resort
+    const qp = this.route.snapshot.queryParamMap.get('fromAccountId') ?? '';
+    const authId = this.auth.userId ?? '';
+    this.fromAccountId = qp || authId || '';
   }
 
-  fromAccountId = 1;
-  toAccountId!: number;
+  fromAccountId = '';
+  toAccountId!: string;
   amount!: number;
   idempotencyKey = '';
 
@@ -111,8 +97,8 @@ export class TransferMoneyComponent {
     if (f.invalid) return;
 
     // Basic validations
-    if (!Number.isFinite(this.fromAccountId) || !Number.isFinite(this.toAccountId) || !Number.isFinite(this.amount)) {
-      this.errorMsg = 'Please provide valid numbers for all fields.';
+    if (!this.fromAccountId || !this.toAccountId || !Number.isFinite(this.amount)) {
+      this.errorMsg = 'Please provide valid values for all fields.';
       return;
     }
     if (this.fromAccountId === this.toAccountId) {
@@ -129,17 +115,33 @@ export class TransferMoneyComponent {
     this.successMsg = null;
     this.lastResponse = null;
 
-    this.api.transfer(this.fromAccountId, this.toAccountId, this.amount, this.idempotencyKey || undefined)
-      .subscribe({
-        next: (res) => {
-          this.lastResponse = res;
-          this.successMsg = 'Transfer request accepted.';
+    // Verify payee account exists before attempting transfer
+    this.api.accountExists(this.toAccountId).subscribe({
+      next: (exists) => {
+        if (!exists) {
+          this.errorMsg = 'Payee account does not exist.';
           this.loading = false;
-        },
-        error: (e: Error) => {
-          this.errorMsg = e.message || 'Transfer failed';
-          this.loading = false;
+          return;
         }
-      });
+
+        // proceed with transfer
+        this.api.transfer(this.fromAccountId, this.toAccountId, this.amount, this.idempotencyKey || undefined)
+          .subscribe({
+            next: (res) => {
+              this.lastResponse = res;
+              this.successMsg = 'Transfer request accepted.';
+              this.loading = false;
+            },
+            error: (e: Error) => {
+              this.errorMsg = e.message || 'Transfer failed';
+              this.loading = false;
+            }
+          });
+      },
+      error: (e: Error) => {
+        this.errorMsg = e.message || 'Failed to verify payee account';
+        this.loading = false;
+      }
+    });
   }
 }

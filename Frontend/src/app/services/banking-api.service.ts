@@ -6,8 +6,8 @@ export type TxStatus = 'ACTIVE' | 'INACTIVE' | 'SUCCESS' | 'FAILED' | 'PENDING' 
 
 export interface TransferHistoryItem {
   transactionId: number;
-  fromAccountId: number;
-  toAccountId: number;
+  fromAccountId: string;
+  toAccountId: string;
   amount: number;
   status: TxStatus;
   failureReason: string | null;
@@ -27,11 +27,9 @@ export class BankingApiService {
     @Inject('API_BASE_URL') private baseUrl: string // e.g. http://localhost:8080/api/v1
   ) {}
 
-  /** GET /accounts/{id}/balance -> plain text number */
-  // src/app/services/banking-api.service.ts
-  getBalance(accountId: number) {
-    // Expect an Account-like JSON: { id, holderName, balance, ... }
-    return this.http.get<any>(`${this.baseUrl}/accounts/${accountId}`).pipe(
+  /** GET /accounts/{id} -> Account-like JSON with balance */
+  getBalance(accountId: string) {
+    return this.http.get<any>(`${this.baseUrl}/accounts/${encodeURIComponent(accountId)}`).pipe(
       map(acc => {
         const val = acc?.balance;
         const num = typeof val === 'string' ? Number(val) : val; // handle "123.45" strings too
@@ -42,8 +40,8 @@ export class BankingApiService {
   }
 
   /** GET /transfers/history/{accountId} -> TransferHistoryItem[] */
-  getHistoryByAccount(accountId: number) {
-    return this.http.get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${accountId}`)
+  getHistoryByAccount(accountId: string) {
+    return this.http.get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${encodeURIComponent(accountId)}`)
       .pipe(
         map((res: any) => Array.isArray(res) ? res : (res?.items || [])),
         catchError((err: HttpErrorResponse) => {
@@ -53,8 +51,19 @@ export class BankingApiService {
       );
   }
 
+  /** GET /accounts/exists/{id} -> boolean */
+  accountExists(accountId: string) {
+    return this.http.get<boolean>(`${this.baseUrl}/accounts/exists/${encodeURIComponent(accountId)}`)
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          const msg = err.error?.message || err.message || 'Failed to check account existence';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
   /** POST /transfers -> TransferResponseDTO (includes idempotencyKey in body and header) */
-  transfer(fromAccountId: number, toAccountId: number, amount: number, providedKey?: string) {
+  transfer(fromAccountId: string, toAccountId: string, amount: number, providedKey?: string) {
     const idempotencyKey =
       (providedKey?.trim()) ||
       (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() :

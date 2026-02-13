@@ -21,7 +21,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {}
 
   userName = 'User';
-  acc: number | null = null;
+  acc: string | null = null;
 
   balance: number | null = null;
   errorMsg: string | null = null;
@@ -49,7 +49,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadBalance(accountId: number) {
+  loadBalance(accountId: string) {
     this.balance = null;
     this.api.getBalance(accountId).subscribe({
       next: (num: number | null) => (this.balance = num),

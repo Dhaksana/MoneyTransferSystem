@@ -10,8 +10,8 @@ type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
 
 export interface TransferHistoryItem {
   transactionId: number;
-  fromAccountId: number;
-  toAccountId: number;
+  fromAccountId: string;
+  toAccountId: string;
   amount: number;
   status: TxStatus;
   failureReason: string | null;
@@ -107,7 +107,7 @@ export class TransactionHistoryComponent implements OnInit {
     private auth: AuthService
   ) {}
 
-  accountId!: number;
+  accountId!: string;
   transactions: TransferHistoryItem[] = [];
   loading = false;
   errorMsg: string | null = null;
@@ -126,9 +126,9 @@ export class TransactionHistoryComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    const qpId = Number(this.route.snapshot.queryParamMap.get('accountId') ?? 'NaN');
-    const authId = this.auth.userId ?? 1;
-    this.accountId = Number.isFinite(qpId) ? qpId : authId;
+    const qpId = this.route.snapshot.queryParamMap.get('accountId') ?? '';
+    const authId = this.auth.userId ?? '';
+    this.accountId = qpId || authId || '';
 
     this.loading = true;
     this.getHistoryByAccount(this.accountId).subscribe({
@@ -145,9 +145,9 @@ export class TransactionHistoryComponent implements OnInit {
     });
   }
 
-  private getHistoryByAccount(accountId: number) {
+  private getHistoryByAccount(accountId: string) {
     return this.http
-      .get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${accountId}`)
+      .get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${encodeURIComponent(accountId)}`)
       .pipe(
         map((res: any) => (Array.isArray(res) ? res : res?.items || [])),
         catchError((err: HttpErrorResponse) => {

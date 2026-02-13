@@ -11,9 +11,11 @@ public interface IAccountService {
 
 	AccountDTO createAccount(AccountDTO account);
 
-    AccountDTO getAccountById(Integer id);
+    AccountDTO getAccountById(String id);
 
-    Double getBalance(Integer id);
+    Double getBalance(String id);
 
     List<AccountDTO> getAllAccounts();
+    boolean accountExists(String id);
+
 }

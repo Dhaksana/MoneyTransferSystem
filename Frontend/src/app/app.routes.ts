@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { LoginComponent } from './login/login.component';
+import { SignupComponent } from './signup/signup.component';
 import { ProfileComponent } from './profile/profile.component';
 import { authGuard } from './app.guard';
 import { TransactionHistoryComponent } from './transaction-histroy/transaction-histroy.component';
@@ -11,6 +12,7 @@ import { TransferMoneyComponent } from './transfer-money/transfer-money.componen
 export const routes: Routes = [
   { path: '', redirectTo: 'welcome', pathMatch: 'full' },
   { path: 'welcome', component: WelcomeComponent },
+  { path: 'signup', component: SignupComponent },
   { path: 'login', component: LoginComponent },
 
   // protected

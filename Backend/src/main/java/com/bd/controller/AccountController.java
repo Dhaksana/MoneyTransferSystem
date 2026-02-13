@@ -35,13 +35,13 @@ public class AccountController {
 
     // READ by ID
     @GetMapping("/{id}")
-    public AccountDTO getAccountById(@PathVariable Integer id) {
+    public AccountDTO getAccountById(@PathVariable String id) {
         return accountService.getAccountById(id);
     }
 
     // READ balance only
     @GetMapping("/{id}/balance")
-    public Double getBalance(@PathVariable Integer id) {
+    public Double getBalance(@PathVariable String id) {
         return accountService.getBalance(id);
     }
 
@@ -50,4 +50,10 @@ public class AccountController {
     public List<AccountDTO> getAllAccounts() {
         return accountService.getAllAccounts();
     }
+    // CHECK if account exists
+    @GetMapping("/exists/{id}")
+    public boolean accountExists(@PathVariable String id) {
+        return accountService.accountExists(id);
+    }
+
 }

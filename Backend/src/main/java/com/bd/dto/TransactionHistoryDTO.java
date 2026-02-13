@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public record TransactionHistoryDTO(
         Long transactionId,
-        Integer fromAccountId,
-        Integer toAccountId,
+        String fromAccountId,
+        String toAccountId,
         Double amount,
         String status,
         String failureReason,

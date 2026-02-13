@@ -10,6 +10,6 @@ public interface ITransferService {
     TransferResponseDTO transfer(TransferRequestDTO request);
 
     // 🔹 HISTORY API
-    List<TransactionHistoryDTO> getTransactionHistory(
-            Integer accountId);
+        List<TransactionHistoryDTO> getTransactionHistory(
+            String accountId);
 }

@@ -13,10 +13,10 @@ public class TransactionLog {
     private Long id;
 
     @Column(nullable = false)
-    private Integer fromAccountId;
+    private String fromAccountId;
 
     @Column(nullable = false)
-    private Integer toAccountId;
+    private String toAccountId;
 
     @Column(nullable = false)
     private Double amount;
@@ -43,19 +43,19 @@ public class TransactionLog {
         return id;
     }
 
-    public Integer getFromAccountId() {
+    public String getFromAccountId() {
         return fromAccountId;
     }
 
-    public void setFromAccountId(Integer fromAccountId) {
+    public void setFromAccountId(String fromAccountId) {
         this.fromAccountId = fromAccountId;
     }
 
-    public Integer getToAccountId() {
+    public String getToAccountId() {
         return toAccountId;
     }
 
-    public void setToAccountId(Integer toAccountId) {
+    public void setToAccountId(String toAccountId) {
         this.toAccountId = toAccountId;
     }
 

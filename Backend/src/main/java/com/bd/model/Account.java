@@ -2,22 +2,36 @@ package com.bd.model;
 
 import java.time.LocalDateTime;
 
+import com.bd.exception.InactiveAccountException;
+import com.bd.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "accounts")
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(length = 64)
+    private String id;
 
+    @NotBlank(message = "Holder name is required")
+    @Size(min = 3, max = 50, message = "Holder name must be 3–50 characters")
     @Column(name = "holder_name", nullable = false)
     private String holderName;
 
+    @PositiveOrZero(message = "Balance cannot be negative")
     @Column(nullable = false)
     private double balance;
 
+    @NotBlank
+    @Pattern(
+            regexp = "ACTIVE|INACTIVE|BLOCKED",
+            message = "Status must be ACTIVE, INACTIVE, or BLOCKED"
+    )
     @Column(nullable = false)
     private String status;
 
@@ -44,7 +58,7 @@ public class Account {
 	public void debit(double amount) {
 
     if (!"ACTIVE".equals(this.status)) {
-        throw new IllegalStateException("Account is not ACTIVE");
+        throw new InactiveAccountException();
     }
 
     if (amount <= 0) {
@@ -52,7 +66,7 @@ public class Account {
     }
 
     if (this.balance < amount) {
-        throw new IllegalStateException("Insufficient balance");
+        throw new InsufficientBalanceException(this.balance, amount);
     }
 
     this.balance -= amount;
@@ -62,7 +76,7 @@ public class Account {
 	public void credit(double amount) {
 
 		if (!"ACTIVE".equals(this.status)) {
-			throw new IllegalStateException("Account is not ACTIVE");
+            throw new InactiveAccountException();
 		}
 
 		if (amount <= 0) {
@@ -79,8 +93,8 @@ public class Account {
     }
 
     // ---------- getters & setters ----------
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getHolderName() { return holderName; }
     public void setHolderName(String holderName) { this.holderName = holderName; }
