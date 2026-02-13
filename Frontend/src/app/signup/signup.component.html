@@ -1,0 +1,27 @@
+<div class="container py-5" style="max-width:480px;">
+	<h2 class="mb-4">Create account</h2>
+
+	<form #f="ngForm" (ngSubmit)="submit(f)" class="card p-3 shadow-soft">
+		<div class="mb-3">
+			<label class="form-label">Username</label>
+			<input class="form-control" name="username" [(ngModel)]="username" required />
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">Holder name</label>
+			<input class="form-control" name="holderName" [(ngModel)]="holderName" required />
+		</div>
+
+		<div class="mb-3">
+			<label class="form-label">Password</label>
+			<input class="form-control" type="password" name="password" [(ngModel)]="password" required />
+		</div>
+
+		<button class="btn btn-primary" type="submit" [disabled]="f.invalid || loading">
+			{{ loading ? 'Creating…' : 'Create account' }}
+		</button>
+		<a routerLink="/welcome" class="btn btn-link">← Back to Welcome</a>
+
+		<div *ngIf="errorMsg" class="alert alert-danger mt-3">{{ errorMsg }}</div>
+	</form>
+</div>

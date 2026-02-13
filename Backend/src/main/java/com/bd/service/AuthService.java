@@ -66,6 +66,8 @@ public class AuthService {
      */
     public Optional<LoginResponse> register(String username, String rawPassword, String holderName) {
         if (username == null || rawPassword == null || holderName == null) return Optional.empty();
+        // enforce password strength: min 8 chars, at least one uppercase and one symbol
+        if (!isStrongPassword(rawPassword)) return Optional.empty();
         if (users.findByUsername(username).isPresent()) return Optional.empty();
 
         // Create bank Account with generated string id
@@ -86,6 +88,16 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(u.getUsername());
         return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName)));
+    }
+
+    private boolean isStrongPassword(String pwd) {
+        if (pwd == null) return false;
+        if (pwd.length() < 8) return false;
+        boolean hasUpper = pwd.chars().anyMatch(ch -> Character.isUpperCase(ch));
+        if (!hasUpper) return false;
+        boolean hasSymbol = pwd.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
+        if (!hasSymbol) return false;
+        return true;
     }
 
     private final SecureRandom rnd = new SecureRandom();

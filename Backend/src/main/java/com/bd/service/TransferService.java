@@ -32,11 +32,18 @@ public class TransferService implements ITransferService {
     @Override
     @Transactional
     public TransferResponseDTO transfer(TransferRequestDTO request) {
+        // First, ensure both accounts exist before doing any work
+        if (!accountRepo.existsById(request.getFromAccountId())) {
+            return new TransferResponseDTO(null, "FAILED", "From account not found");
+        }
+        if (!accountRepo.existsById(request.getToAccountId())) {
+            return new TransferResponseDTO(null, "FAILED", "To account not found");
+        }
 
-        // ✅ Create log immediately with request values
-            TransactionLog log = new TransactionLog();
-            log.setFromAccountId(request.getFromAccountId());
-            log.setToAccountId(request.getToAccountId());
+        // ✅ Create log with request values (not yet persisted)
+        TransactionLog log = new TransactionLog();
+        log.setFromAccountId(request.getFromAccountId());
+        log.setToAccountId(request.getToAccountId());
         log.setAmount(request.getAmount());
         log.setIdempotencyKey(request.getIdempotencyKey());
 
@@ -49,13 +56,13 @@ public class TransferService implements ITransferService {
                     });
 
             // 🔹 Fetch accounts
-                Account from = accountRepo.findById(request.getFromAccountId())
+            Account from = accountRepo.findById(request.getFromAccountId())
                     .orElseThrow(() -> new RuntimeException("From account not found"));
 
-                Account to = accountRepo.findById(request.getToAccountId())
+            Account to = accountRepo.findById(request.getToAccountId())
                     .orElseThrow(() -> new RuntimeException("To account not found"));
 
-                if (from.getId().equals(to.getId())) {
+            if (from.getId().equals(to.getId())) {
                 throw new IllegalArgumentException("Cannot transfer to same account");
             }
 

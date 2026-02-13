@@ -43,7 +43,7 @@ public class AuthController {
         Optional<LoginResponse> resp = auth.register(username, password, holderName);
         return resp.<ResponseEntity<?>>map(ResponseEntity::ok)
             .orElseGet(() -> ResponseEntity.status(400).body(
-                new Object() { public final String message = "Registration failed (username may exist)"; }
+                new Object() { public final String message = "Registration failed (username may exist or password does not meet rules: min 8 chars, 1 uppercase, 1 symbol)"; }
             ));
         }
 }
