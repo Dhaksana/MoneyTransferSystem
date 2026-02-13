@@ -129,7 +129,14 @@ export class TransferMoneyComponent {
           .subscribe({
             next: (res) => {
               this.lastResponse = res;
-              this.successMsg = 'Transfer request accepted.';
+              const status = (res?.status || '').toUpperCase();
+              if (status === 'SUCCESS') {
+                this.successMsg = 'Transfer request accepted.';
+                this.errorMsg = null;
+              } else {
+                this.errorMsg = res?.message || 'Transfer failed';
+                this.successMsg = null;
+              }
               this.loading = false;
             },
             error: (e: Error) => {
