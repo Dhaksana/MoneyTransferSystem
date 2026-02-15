@@ -94,4 +94,8 @@ public class TransactionLog {
     public LocalDateTime getCreatedOn() {
         return createdOn;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

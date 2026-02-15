@@ -64,12 +64,36 @@ public class AuthService {
     /**
      * Register a new application user and create a linked Account.
      * Returns LoginResponse with token on success.
+     * Validation rules:
+     * - Username: 3-32 chars, alphanumeric + underscore/dot only, must be unique
+     * - Password: min 8 chars, at least one uppercase and one symbol
+     * - Holder name: 2-100 chars, letters/spaces/hyphens only
      */
     public Optional<LoginResponse> register(String username, String rawPassword, String holderName) {
-        if (username == null || rawPassword == null || holderName == null) return Optional.empty();
-        // enforce password strength: min 8 chars, at least one uppercase and one symbol
-        if (!isStrongPassword(rawPassword)) return Optional.empty();
-        if (users.findByUsername(username).isPresent()) return Optional.empty();
+        // Null checks
+        if (username == null || rawPassword == null || holderName == null) {
+            return Optional.empty();
+        }
+        
+        // Validate username
+        if (!isValidUsername(username)) {
+            return Optional.empty();
+        }
+        
+        // Check username uniqueness
+        if (users.findByUsername(username).isPresent()) {
+            return Optional.empty(); // Username already exists
+        }
+        
+        // Validate password strength
+        if (!isStrongPassword(rawPassword)) {
+            return Optional.empty();
+        }
+        
+        // Validate holder name
+        if (!isValidHolderName(holderName)) {
+            return Optional.empty();
+        }
 
         // Create bank Account with generated string id
         Account acc = new Account();
@@ -89,6 +113,36 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(u.getUsername());
         return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName), u.getRole()));
+    }
+
+    /**
+     * Validate username format and length
+     * Rules: 3-32 characters, alphanumeric with underscore and dot allowed
+     */
+    private boolean isValidUsername(String username) {
+        if (username == null || username.isBlank()) {
+            return false;
+        }
+        if (username.length() < 3 || username.length() > 32) {
+            return false;
+        }
+        // Allow alphanumeric, underscore, and dot
+        return username.matches("^[a-zA-Z0-9._]+$");
+    }
+
+    /**
+     * Validate holder name format and length
+     * Rules: 2-100 characters, letters, spaces, hyphens, and apostrophes only
+     */
+    private boolean isValidHolderName(String holderName) {
+        if (holderName == null || holderName.isBlank()) {
+            return false;
+        }
+        if (holderName.length() < 2 || holderName.length() > 100) {
+            return false;
+        }
+        // Allow letters, spaces, hyphens, apostrophes, and accented characters
+        return holderName.matches("^[a-zA-Z\\s\\-'àáâäãåèéêëìíîïòóôöõùúûüœæńńşßÀÁÂÄÃÅÈÉÊËÌÍÎÏÒÓÔÖÕÙÚÛÜŒÆ]+$");
     }
 
     private boolean isStrongPassword(String pwd) {

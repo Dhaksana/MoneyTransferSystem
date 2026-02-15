@@ -2,6 +2,7 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { BankingApiService } from '../services/banking-api.service';
 import { AuthService } from '../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -9,7 +10,7 @@ import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
 })
@@ -21,6 +22,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {}
 
   userName = 'User';
+  userRole = 'USER';
   acc: string | null = null;
 
   balance: number | null = null;
@@ -28,6 +30,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
   monthlyExpense: number = 0;
   recentTransactions: any[] = [];
   errorMsg: string | null = null;
+
+  // Balance update form
+  showUpdateBalance = false;
+  newBalance: number | null = null;
+  updateBalanceLoading = false;
+  updateBalanceSuccess = false;
+  updateBalanceError: string | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -37,6 +46,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((u) => {
         this.userName = u.name || 'User';
+        this.userRole = this.auth.userRole;
         this.acc = u.id ?? null;
         // load balance for logged-in account
         if (this.acc != null) {
@@ -78,6 +88,49 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.monthlyReceived = 0;
         this.monthlyExpense = 0;
         this.recentTransactions = [];
+      },
+    });
+  }
+
+  openUpdateBalanceForm() {
+    this.showUpdateBalance = true;
+    this.newBalance = this.balance;
+    this.updateBalanceSuccess = false;
+    this.updateBalanceError = null;
+  }
+
+  cancelUpdateBalance() {
+    this.showUpdateBalance = false;
+    this.newBalance = null;
+    this.updateBalanceSuccess = false;
+    this.updateBalanceError = null;
+  }
+
+  submitUpdateBalance() {
+    if (this.newBalance === null || this.newBalance === undefined || !this.acc) {
+      this.updateBalanceError = 'Please enter a valid balance amount';
+      return;
+    }
+
+    if (this.newBalance < 0) {
+      this.updateBalanceError = 'Balance cannot be negative';
+      return;
+    }
+
+    this.updateBalanceLoading = true;
+    this.updateBalanceError = null;
+
+    this.api.updateBalance(this.acc, this.newBalance).subscribe({
+      next: (response: any) => {
+        this.updateBalanceLoading = false;
+        this.updateBalanceSuccess = true;
+        this.balance = response?.balance ?? this.newBalance;
+        this.showUpdateBalance = false;
+        setTimeout(() => (this.updateBalanceSuccess = false), 3000);
+      },
+      error: (e: { message: string }) => {
+        this.updateBalanceLoading = false;
+        this.updateBalanceError = e.message || 'Failed to update balance';
       },
     });
   }

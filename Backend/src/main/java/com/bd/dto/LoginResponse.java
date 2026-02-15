@@ -13,6 +13,8 @@ public class LoginResponse {
         this.role = role;
     }
 
+    public LoginResponse(){}
+
     public boolean isAuthenticated() { return authenticated; }
     public String getToken() { return token; }
     public UserInfo getUser() { return user; }

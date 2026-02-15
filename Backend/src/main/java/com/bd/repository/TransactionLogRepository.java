@@ -13,7 +13,7 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog, 
 
     Optional<TransactionLog> findByIdempotencyKey(String idempotencyKey);
 
-    // ✅ CUSTOM JPQL QUERY (MANDATORY REQUIREMENT)
+    // CUSTOM JPQL QUERY (MANDATORY REQUIREMENT)
     @Query("""
         SELECT t FROM TransactionLog t
         WHERE t.fromAccountId = :accountId

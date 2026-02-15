@@ -42,7 +42,7 @@ import { AuthService } from '../services/auth.service';
             </button>
           </div>
           <small *ngIf="toAccountVerified" class="text-success d-block mt-1">
-            ✓ {{ toAccountHolderName }}
+            {{ toAccountHolderName }}
           </small>
           <small *ngIf="!toAccountVerified && toAccountId" class="text-danger d-block mt-1">
             Account not verified

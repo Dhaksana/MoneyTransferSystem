@@ -34,13 +34,13 @@ public class TransferController {
         return transferService.transfer(request);
     }
 
-    // ✅ GET /api/v1/transfers/history/{accountId}
+    // GET /api/v1/transfers/history/{accountId}
     @GetMapping("/history/{accountId}")
     public List<TransactionHistoryDTO> history(@PathVariable String accountId) {
         return transferService.getTransactionHistory(accountId);
     }
 
-    // ✅ GET /api/v1/transfers/history/{accountId}/paginated?page=0&size=10
+    // GET /api/v1/transfers/history/{accountId}/paginated?page=0&size=10
     @GetMapping("/history/{accountId}/paginated")
     public PaginatedResponse<TransactionHistoryDTO> historyPaginated(
             @PathVariable String accountId,
@@ -49,7 +49,7 @@ public class TransferController {
         return transferService.getTransactionHistoryPaginated(accountId, page, size);
     }
 
-    // ✅ GET /api/v1/transfers/history/{accountId}/paginated-filter?page=0&size=10&filter=sent
+    // GET /api/v1/transfers/history/{accountId}/paginated-filter?page=0&size=10&filter=sent
     @GetMapping("/history/{accountId}/paginated-filter")
     public PaginatedResponse<TransactionHistoryDTO> historyPaginatedWithFilter(
             @PathVariable String accountId,

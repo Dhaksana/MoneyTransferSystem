@@ -44,7 +44,10 @@ import { BankingApiService, TransferHistoryItem } from '../services/banking-api.
                 </select>
               </td>
 
-              <td class="text-end">{{ a.balance ?? '-' }}</td>
+              <td class="text-end">
+                <span *ngIf="editingId !== (a.accountId || a.account_id || a.id)">{{ a.balance ?? '-' }}</span>
+                <input *ngIf="editingId === (a.accountId || a.account_id || a.id)" type="number" class="form-control form-control-sm" [(ngModel)]="editModel.balance" step="0.01" min="0"/>
+              </td>
 
               <td class="text-end">
                 <div *ngIf="editingId !== (a.accountId || a.account_id || a.id)">
@@ -52,8 +55,11 @@ import { BankingApiService, TransferHistoryItem } from '../services/banking-api.
                   <button class="btn btn-sm btn-outline-danger" (click)="deactivate(a)">Deactivate</button>
                 </div>
                 <div *ngIf="editingId === (a.accountId || a.account_id || a.id)">
-                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit(a)">Save</button>
-                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">Cancel</button>
+                  <button class="btn btn-sm btn-success me-1" (click)="saveEdit(a)" [disabled]="savingEdit">
+                    <span *ngIf="!savingEdit">Save</span>
+                    <span *ngIf="savingEdit"><span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving...</span>
+                  </button>
+                  <button class="btn btn-sm btn-secondary" (click)="cancelEdit()" [disabled]="savingEdit">Cancel</button>
                 </div>
               </td>
             </tr>
@@ -122,6 +128,7 @@ export class AdminDashboardComponent implements OnInit {
 
   editingId: string | null = null;
   editModel: any = { holderName: '', status: 'ACTIVE', balance: 0 };
+  savingEdit = false;
 
   currentPage = 0;
   pageSize = 10;
@@ -156,7 +163,8 @@ export class AdminDashboardComponent implements OnInit {
     this.editingId = id;
     this.editModel = {
       holderName: a.holderName || a.display_name || a.holder || '',
-      status: a.status || a.state || 'ACTIVE'
+      status: a.status || a.state || 'ACTIVE',
+      balance: a.balance ?? 0
     };
   }
 
@@ -171,12 +179,34 @@ export class AdminDashboardComponent implements OnInit {
       holderName: this.editModel.holderName,
       status: this.editModel.status
     };
+    
+    this.savingEdit = true;
+    
+    // First, update account details (holderName and status)
     this.api.updateAccount(id, payload).subscribe({
       next: (res) => {
-        this.cancelEdit();
-        this.loadAccounts();
+        // If balance changed, update it separately
+        if (this.editModel.balance !== undefined && this.editModel.balance !== null) {
+          this.api.updateBalance(id, this.editModel.balance).subscribe({
+            next: (balRes) => {
+              this.savingEdit = false;
+              this.cancelEdit();
+              this.loadAccounts();
+            },
+            error: (e: any) => {
+              this.savingEdit = false;
+              console.error('Update balance failed', e);
+              this.accountsError = (e?.status ? 'Status '+e.status+': ' : '') + (e?.error?.message || e?.message || String(e));
+            }
+          });
+        } else {
+          this.savingEdit = false;
+          this.cancelEdit();
+          this.loadAccounts();
+        }
       },
-      error: (e:any) => {
+      error: (e: any) => {
+        this.savingEdit = false;
         console.error('Update account failed', e);
         this.accountsError = (e?.status ? 'Status '+e.status+': ' : '') + (e?.error?.message || e?.message || String(e));
       }

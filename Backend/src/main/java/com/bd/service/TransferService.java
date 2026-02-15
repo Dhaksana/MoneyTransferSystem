@@ -41,7 +41,7 @@ public class TransferService implements ITransferService {
             return new TransferResponseDTO(null, "FAILED", "To account not found");
         }
 
-        // ✅ Create log with request values (not yet persisted)
+        // Create log with request values (not yet persisted)
         TransactionLog log = new TransactionLog();
         log.setFromAccountId(request.getFromAccountId());
         log.setToAccountId(request.getToAccountId());
@@ -50,13 +50,13 @@ public class TransferService implements ITransferService {
 
         try {
 
-            // 🔹 Idempotency check
+            // Idempotency check
             logRepo.findByIdempotencyKey(request.getIdempotencyKey())
                     .ifPresent(t -> {
                         throw new IllegalStateException("Duplicate transfer request");
                     });
 
-            // 🔹 Fetch accounts
+            // Fetch accounts
             Account from = accountRepo.findById(request.getFromAccountId())
                     .orElseThrow(() -> new RuntimeException("From account not found"));
 
@@ -67,14 +67,14 @@ public class TransferService implements ITransferService {
                 throw new IllegalArgumentException("Cannot transfer to same account");
             }
 
-            // 🔹 Perform transfer
+            // Perform transfer
             from.debit(request.getAmount());
             to.credit(request.getAmount());
 
             accountRepo.save(from);
             accountRepo.save(to);
 
-            // 🔹 Save success log
+            // Save success log
             log.setStatus("SUCCESS");
             logRepo.save(log);
 
@@ -86,7 +86,7 @@ public class TransferService implements ITransferService {
 
         } catch (Exception e) {
 
-            // 🔹 Save failure log in separate transaction (don't let save errors override response)
+            // Save failure log in separate transaction (don't let save errors override response)
             log.setStatus("FAILED");
             log.setFailureReason(e.getMessage());
             try {
@@ -95,7 +95,7 @@ public class TransferService implements ITransferService {
                 // ignore logging errors to ensure we return a controlled FAILED response
             }
 
-            // 🔹 Return FAILED response instead of throwing 500
+            // Return FAILED response instead of throwing 500
             return new TransferResponseDTO(
                     log.getId(),
                     "FAILED",

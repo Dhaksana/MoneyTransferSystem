@@ -2,6 +2,7 @@ package com.bd.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.bd.dto.AccountDTO;
@@ -54,6 +55,25 @@ public class AccountController {
     @GetMapping("/exists/{id}")
     public boolean accountExists(@PathVariable String id) {
         return accountService.accountExists(id);
+    }
+
+    // UPDATE account (Admin only) - can update balance, holder name, status
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public AccountDTO updateAccount(@PathVariable String id, @RequestBody AccountDTO accountDTO) {
+        return accountService.updateAccount(id, accountDTO);
+    }
+
+    // UPDATE account balance (Admin only)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}/balance")
+    public AccountDTO updateBalance(@PathVariable String id, @RequestParam Double balance) {
+        if (balance == null || balance < 0) {
+            throw new IllegalArgumentException("Balance must be a non-negative number");
+        }
+        AccountDTO dto = new AccountDTO();
+        dto.setBalance(balance);
+        return accountService.updateAccount(id, dto);
     }
 
 }

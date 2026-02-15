@@ -43,7 +43,7 @@ public class Account {
 
     public Account() {}
 
-    /* ✅ AUTOMATIC timestamp handling */
+    /* AUTOMATIC timestamp handling */
     @PrePersist
     public void onCreate() {
         this.lastUpdated = LocalDateTime.now();

@@ -3,7 +3,7 @@
 <!-- Profile -->
 <div class="container py-5">
   <h2 class="text-success fw-bold">Profile</h2>
-  <p class="lead">Welcome, {{ userName }} 🎉</p>
+  <p class="lead">Welcome, {{ userName }}</p>
 
   <div class="row mb-4">
     <!-- Account Info -->
@@ -16,12 +16,17 @@
           </div>
           <div>
             <p class="text-muted mb-1">Bank Balance</p>
-            <p class="fw-bold fs-5 text-success">
-              <ng-container *ngIf="balance !== null; else dash">
-                {{ balance | currency:'INR':'symbol':'1.0-2' }}
-              </ng-container>
-              <ng-template #dash>—</ng-template>
-            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <p class="fw-bold fs-5 text-success mb-0">
+                <ng-container *ngIf="balance !== null; else dash">
+                  {{ balance | currency:'INR':'symbol':'1.0-2' }}
+                </ng-container>
+                <ng-template #dash>—</ng-template>
+              </p>
+              <button *ngIf="userRole === 'ADMIN'" class="btn btn-sm btn-outline-success" (click)="openUpdateBalanceForm()">
+                Update
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -45,6 +50,48 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Update Balance Form (Admin Only) -->
+  <div *ngIf="showUpdateBalance && userRole === 'ADMIN'" class="card card-body shadow-sm mb-4 bg-light">
+    <h5 class="mb-3">Update Account Balance</h5>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="newBalance" class="form-label">New Balance</label>
+          <input type="number" class="form-control" id="newBalance" 
+                 [(ngModel)]="newBalance" placeholder="Enter new balance" 
+                 [disabled]="updateBalanceLoading" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label class="form-label">&nbsp;</label>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" (click)="submitUpdateBalance()" 
+                    [disabled]="updateBalanceLoading">
+              <span *ngIf="!updateBalanceLoading">Update</span>
+              <span *ngIf="updateBalanceLoading">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Updating...
+              </span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelUpdateBalance()" 
+                    [disabled]="updateBalanceLoading">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="updateBalanceError" class="alert alert-danger mb-0">
+      {{ updateBalanceError }}
+    </div>
+  </div>
+
+  <!-- Success Alert -->
+  <div *ngIf="updateBalanceSuccess" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+    Balance updated successfully!
   </div>
 
   <div class="d-flex gap-2 mt-3">

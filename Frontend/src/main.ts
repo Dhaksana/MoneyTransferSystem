@@ -12,7 +12,7 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
 
-    // ✅ Set your backend base (include /api/v1 so FE paths stay simple)
+    // Set your backend base (include /api/v1 so FE paths stay simple)
     { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' }
     ,{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],

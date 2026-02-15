@@ -152,9 +152,9 @@ export class BankingApiService {
     );
   }
 
-  /** PUT /admin/accounts/{id} - Admin only */
+  /** PUT /accounts/{id} - Admin only, update full account details */
   updateAccount(accountId: string, body: any) {
-    return this.http.put<any>(`${this.baseUrl}/admin/accounts/${encodeURIComponent(accountId)}`, body).pipe(
+    return this.http.put<any>(`${this.baseUrl}/accounts/${encodeURIComponent(accountId)}`, body).pipe(
       catchError((err: HttpErrorResponse) => {
         const msg = err.error?.message || err.error?.error || err.message || 'Failed to update account';
         return throwError(() => new Error(msg));
@@ -162,9 +162,19 @@ export class BankingApiService {
     );
   }
 
-  /** DELETE /admin/accounts/{id} - Admin only */
+  /** PUT /accounts/{id}/balance - Admin only, update balance only */
+  updateBalance(accountId: string, balance: number) {
+    return this.http.put<any>(`${this.baseUrl}/accounts/${encodeURIComponent(accountId)}/balance?balance=${balance}`, {}).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to update balance';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** DELETE /accounts/{id} - Deactivate account (Admin only) */
   deactivateAccount(accountId: string) {
-    return this.http.delete<void>(`${this.baseUrl}/admin/accounts/${encodeURIComponent(accountId)}`).pipe(
+    return this.http.delete<void>(`${this.baseUrl}/accounts/${encodeURIComponent(accountId)}`).pipe(
       catchError((err: HttpErrorResponse) => {
         const msg = err.error?.message || err.error?.error || err.message || 'Failed to deactivate account';
         return throwError(() => new Error(msg));

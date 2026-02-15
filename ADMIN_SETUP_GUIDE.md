@@ -69,9 +69,9 @@ Request body:
 }
 ```
 Admin can:
-- ✅ Change holder name
-- ✅ Change account status (ACTIVE, INACTIVE, BLOCKED)
-- ✅ Manually adjust balance
+- Change holder name
+- Change account status (ACTIVE, INACTIVE, BLOCKED)
+- Manually adjust balance
 
 ### 4. **Deactivate an Account**
 ```

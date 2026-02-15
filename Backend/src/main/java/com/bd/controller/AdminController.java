@@ -32,13 +32,13 @@ public class AdminController {
         this.transferService = transferService;
     }
 
-    // ✅ GET all accounts
+    // GET all accounts
     @GetMapping("/accounts")
     public List<AccountDTO> getAllAccounts() {
         return accountService.getAllAccounts();
     }
 
-    // ✅ GET all transactions (paginated)
+    // GET all transactions (paginated)
     @GetMapping("/transactions/paginated")
     public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(
             @RequestParam(defaultValue = "0") int page,
@@ -46,13 +46,13 @@ public class AdminController {
         return transferService.getAllTransactionsPaginated(page, size);
     }
 
-    // ✅ UPDATE account details (unlock, change status, etc.)
+    // UPDATE account details (unlock, change status, etc.)
     @PutMapping("/accounts/{id}")
     public AccountDTO updateAccount(@PathVariable String id, @RequestBody AccountDTO accountDTO) {
         return accountService.updateAccount(id, accountDTO);
     }
 
-    // ✅ DELETE/DEACTIVATE an account
+    // DELETE/DEACTIVATE an account
     @DeleteMapping("/accounts/{id}")
     public void deactivateAccount(@PathVariable String id) {
         accountService.deactivateAccount(id);
