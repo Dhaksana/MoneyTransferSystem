@@ -118,6 +118,18 @@ export class BankingApiService {
     );
   }
 
+  /** GET /transfers/history/{accountId}/paginated-filter?page=0&size=10&filter=sent */
+  getHistoryByAccountPaginatedWithFilter(accountId: string, page: number = 0, size: number = 10, filter: string = 'all') {
+    return this.http.get<PaginatedResponse<TransferHistoryItem>>(
+      `${this.baseUrl}/transfers/history/${encodeURIComponent(accountId)}/paginated-filter?page=${page}&size=${size}&filter=${filter}`
+    ).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to load history';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
   /** GET /admin/transactions/paginated?page=0&size=10 - Admin only */
   getAllTransactionsPaginated(page: number = 0, size: number = 10) {
     return this.http.get<PaginatedResponse<TransferHistoryItem>>(

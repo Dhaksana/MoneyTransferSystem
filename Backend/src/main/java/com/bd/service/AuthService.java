@@ -56,8 +56,9 @@ public class AuthService {
 
         String accountId = u.getAccountId();
         String displayName = u.getDisplayName();
+        String role = u.getRole();
 
-        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(accountId, displayName)));
+        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(accountId, displayName), role));
     }
 
     /**
@@ -87,7 +88,7 @@ public class AuthService {
         users.save(u);
 
         String token = jwtUtil.generateToken(u.getUsername());
-        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName)));
+        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName), u.getRole()));
     }
 
     private boolean isStrongPassword(String pwd) {

@@ -152,6 +152,58 @@ public class TransferService implements ITransferService {
     }
 
     @Override
+    public PaginatedResponse<TransactionHistoryDTO> getTransactionHistoryPaginatedWithFilter(
+            String accountId, int page, int size, String filter) {
+        // Fetch all transactions for the account
+        List<TransactionLog> allTransactions = logRepo.findTransactionHistory(accountId);
+        
+        // Apply filter
+        if (filter != null && !filter.isEmpty() && !"all".equalsIgnoreCase(filter)) {
+            allTransactions = allTransactions.stream()
+                    .filter(t -> applyTransactionFilter(t, accountId, filter))
+                    .collect(Collectors.toList());
+        }
+        
+        // Calculate pagination
+        int totalElements = allTransactions.size();
+        int start = page * size;
+        int end = Math.min(start + size, totalElements);
+        
+        // Get page content
+        List<TransactionHistoryDTO> pageContent = allTransactions
+                .subList(start, end)
+                .stream()
+                .map(t -> new TransactionHistoryDTO(
+                        t.getId(),
+                        t.getFromAccountId(),
+                        t.getToAccountId(),
+                        t.getAmount(),
+                        t.getStatus(),
+                        t.getFailureReason(),
+                        t.getCreatedOn()
+                ))
+                .collect(Collectors.toList());
+        
+        return new PaginatedResponse<>(pageContent, page, size, totalElements);
+    }
+
+    // Helper method to apply filter logic
+    private boolean applyTransactionFilter(TransactionLog transaction, String accountId, String filter) {
+        switch (filter.toLowerCase()) {
+            case "sent":
+                return transaction.getFromAccountId().equals(accountId);
+            case "received":
+                return transaction.getToAccountId().equals(accountId);
+            case "success":
+                return "SUCCESS".equalsIgnoreCase(transaction.getStatus());
+            case "failure":
+                return "FAILED".equalsIgnoreCase(transaction.getStatus());
+            default:
+                return true;
+        }
+    }
+
+    @Override
     public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size) {
         // Fetch all transactions in the system (admin only)
         List<TransactionLog> allTransactions = logRepo.findAll();

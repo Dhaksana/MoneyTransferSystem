@@ -48,4 +48,14 @@ public class TransferController {
             @RequestParam(defaultValue = "10") int size) {
         return transferService.getTransactionHistoryPaginated(accountId, page, size);
     }
+
+    // ✅ GET /api/v1/transfers/history/{accountId}/paginated-filter?page=0&size=10&filter=sent
+    @GetMapping("/history/{accountId}/paginated-filter")
+    public PaginatedResponse<TransactionHistoryDTO> historyPaginatedWithFilter(
+            @PathVariable String accountId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "all") String filter) {
+        return transferService.getTransactionHistoryPaginatedWithFilter(accountId, page, size, filter);
+    }
 }

@@ -163,119 +163,83 @@ export class TransactionHistoryComponent implements OnInit {
     const authId = this.auth.userId ?? '';
     this.accountId = qpId || authId || '';
 
-    this.loadPage(0);
+    // Load initial counts from all transactions
+    this.loadInitialCounts();
+    
+    // Load first page with current filter
+    this.loadPageWithFilter(0);
   }
 
-  loadPage(page: number): void {
+  // Load counts for all filter types upfront
+  private loadInitialCounts(): void {
+    this.http
+      .get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${encodeURIComponent(this.accountId)}`)
+      .pipe(
+        map((res: any) => (Array.isArray(res) ? res : res?.items || [])),
+        catchError(() => of([]))
+      )
+      .subscribe((items: TransferHistoryItem[]) => {
+        const id = this.accountId;
+        const upper = (s?: string) => (s || '').toUpperCase();
+
+        this.counts.all = items.length;
+        this.counts.received = items.filter(t => t.toAccountId === id).length;
+        this.counts.sent = items.filter(t => t.fromAccountId === id).length;
+        this.counts.success = items.filter(t => upper(t.status) === 'SUCCESS').length;
+        this.counts.failure = items.filter(t => upper(t.status) === 'FAILED').length;
+      });
+  }
+
+  loadPageWithFilter(page: number): void {
     if (page < 0 || page >= this.totalPages && this.totalPages > 0) {
-      return; // Prevent out of bounds
+      return;
     }
 
     this.loading = true;
     this.currentPage = page;
 
-    // Try paginated endpoint, fallback to old endpoint if paginated fails
-    this.api.getHistoryByAccountPaginated(this.accountId, page, this.pageSize).subscribe({
+    // Call backend with filter parameter for server-side filtering + pagination
+    this.api.getHistoryByAccountPaginatedWithFilter(this.accountId, page, this.pageSize, this.selected).subscribe({
       next: (response: PaginatedResponse<TransferHistoryItem>) => {
-        // Server returns a single page in `content` and total counts separately
-        this.serverPaged = true;
-        this.filteredTransactions = response.content || [];
-        this.displayedTransactions = this.filteredTransactions;
-        this.totalElements = response.totalElements ?? this.filteredTransactions.length;
+        this.displayedTransactions = response.content || [];
+        this.totalElements = response.totalElements ?? 0;
         this.totalPages = response.totalPages ?? Math.ceil(this.totalElements / this.pageSize);
-        this.recomputeCounts();
         this.loading = false;
       },
       error: (e: any) => {
-        // Fallback to old non-paginated API
-        console.warn('Paginated API failed, falling back to non-paginated:', e);
-        this.serverPaged = false;
-        this.getHistoryByAccountFallback();
+        console.error('Error loading transactions:', e);
+        this.errorMsg = 'Failed to load transactions';
+        this.loading = false;
       },
     });
   }
 
-  // Fallback: Load all transactions and manually paginate client-side
-  private getHistoryByAccountFallback(): void {
-    this.http
-      .get<TransferHistoryItem[]>(`${this.baseUrl}/transfers/history/${encodeURIComponent(this.accountId)}`)
-      .pipe(
-        map((res: any) => (Array.isArray(res) ? res : res?.items || [])),
-        catchError((err: HttpErrorResponse) => {
-          this.errorMsg = 'Failed to load transaction history: ' + (err.error?.message || err.message || 'Unknown error');
-          this.loading = false;
-          return of([]);
-        })
-      )
-      .subscribe((items: TransferHistoryItem[]) => {
-        this.serverPaged = false;
-        this.transactions = items || [];
-        // After loading full list, compute counts and client-side pagination
-        this.recomputeCounts();
-        this.applyFilter();
-        // applyFilter will set displayedTransactions and totals
-        this.loading = false;
-      });
+  loadPage(page: number): void {
+    this.loadPageWithFilter(page);
   }
 
   // --- Filtering logic ---
   setFilter(f: Filter) {
     if (this.selected === f) return;
     this.selected = f;
-    this.applyFilter();
+    this.currentPage = 0; // Reset to first page when filter changes
+    this.loadPageWithFilter(0); // Load with new filter
   }
 
   private applyFilter() {
-    const id = this.accountId;
-    const upper = (s?: string) => (s || '').toUpperCase();
-
-    const arr = this.transactions.filter((t) => {
-      switch (this.selected) {
-        case 'received': return t.toAccountId === id;
-        case 'sent':     return t.fromAccountId === id;
-        case 'success':  return upper(t.status) === 'SUCCESS';
-        case 'failure':  return upper(t.status) === 'FAILED';
-        default:         return true; // 'all'
-      }
-    });
-
-    // newest first
-    this.filteredTransactions = arr.sort((a, b) =>
-      new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()
-    );
-
-    // If we are client-paging (fallback), compute totals and slice for display
-    if (!this.serverPaged) {
-      this.totalElements = this.filteredTransactions.length;
-      this.totalPages = Math.max(1, Math.ceil(this.totalElements / this.pageSize));
-      const start = this.currentPage * this.pageSize;
-      this.displayedTransactions = this.filteredTransactions.slice(start, start + this.pageSize);
-    } else {
-      // server-paged mode: filteredTransactions already contains current page
-      this.displayedTransactions = this.filteredTransactions;
-    }
-  }
-
-  private recomputeCounts() {
-    const id = this.accountId;
-    const upper = (s?: string) => (s || '').toUpperCase();
-
-    this.counts.all = this.transactions.length;
-    this.counts.received = this.transactions.filter(t => t.toAccountId === id).length;
-    this.counts.sent = this.transactions.filter(t => t.fromAccountId === id).length;
-    this.counts.success = this.transactions.filter(t => upper(t.status) === 'SUCCESS').length;
-    this.counts.failure = this.transactions.filter(t => upper(t.status) === 'FAILED').length;
+    // This method is no longer used for client-side filtering
+    // Kept for backward compatibility if needed
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
-      this.loadPage(this.currentPage + 1);
+      this.loadPageWithFilter(this.currentPage + 1);
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 0) {
-      this.loadPage(this.currentPage - 1);
+      this.loadPageWithFilter(this.currentPage - 1);
     }
   }
 

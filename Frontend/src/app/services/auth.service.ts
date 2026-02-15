@@ -6,6 +6,7 @@ import { BehaviorSubject, catchError, map, throwError } from 'rxjs';
 interface LoginResponse {
   authenticated?: boolean;
   token?: string;
+  role?: string;
   user?: { id?: string; name?: string };
 }
 
@@ -42,6 +43,9 @@ export class AuthService {
           // store name and id
           if (data.user?.name) localStorage.setItem('user_name', data.user.name);
           if (data.user?.id != null) localStorage.setItem('user_id', String(data.user.id));
+          
+          // store role
+          if (data.role) localStorage.setItem('user_role', data.role);
 
           this._isLoggedIn.next(true);
           this._currentUser.next(this.readUserFromStorage());
@@ -73,6 +77,9 @@ export class AuthService {
 
           if (data.user?.name) localStorage.setItem('user_name', data.user.name);
           if (data.user?.id != null) localStorage.setItem('user_id', String(data.user.id));
+          
+          // store role
+          if (data.role) localStorage.setItem('user_role', data.role);
 
           this._isLoggedIn.next(true);
           this._currentUser.next(this.readUserFromStorage());
@@ -90,6 +97,7 @@ export class AuthService {
     localStorage.removeItem('auth_flag');
     localStorage.removeItem('user_name');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('user_role');
     this._isLoggedIn.next(false);
     this._currentUser.next({ id: null, name: 'User' });
   }
@@ -100,6 +108,7 @@ export class AuthService {
     const raw = localStorage.getItem('user_id');
     return raw ?? null;
   }
+  get userRole(): string { return localStorage.getItem('user_role') || 'USER'; }
   isLoggedInSync(): boolean { return this._isLoggedIn.value; }
 
   private hasSession(): boolean {
