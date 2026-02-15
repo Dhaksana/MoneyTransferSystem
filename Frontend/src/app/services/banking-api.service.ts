@@ -20,6 +20,16 @@ export interface TransferResponseDTO {
   message: string;
 }
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  isLast: boolean;
+  isFirst: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BankingApiService {
   constructor(
@@ -37,6 +47,17 @@ export class BankingApiService {
       }),
       catchError(() => throwError(() => new Error('Failed to load balance')))
     );
+  }
+
+  /** GET /accounts/{id} -> Full AccountDTO with holder name and balance */
+  getAccountById(accountId: string) {
+    return this.http.get<any>(`${this.baseUrl}/accounts/${encodeURIComponent(accountId)}`)
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          const msg = err.error?.message || err.error?.error || err.message || 'Failed to load account details';
+          return throwError(() => new Error(msg));
+        })
+      );
   }
 
   /** GET /transfers/history/{accountId} -> TransferHistoryItem[] */
@@ -83,5 +104,59 @@ export class BankingApiService {
           return throwError(() => new Error(msg));
         })
       );
+  }
+
+  /** GET /transfers/history/{accountId}/paginated?page=0&size=10 */
+  getHistoryByAccountPaginated(accountId: string, page: number = 0, size: number = 10) {
+    return this.http.get<PaginatedResponse<TransferHistoryItem>>(
+      `${this.baseUrl}/transfers/history/${encodeURIComponent(accountId)}/paginated?page=${page}&size=${size}`
+    ).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to load history';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** GET /admin/transactions/paginated?page=0&size=10 - Admin only */
+  getAllTransactionsPaginated(page: number = 0, size: number = 10) {
+    return this.http.get<PaginatedResponse<TransferHistoryItem>>(
+      `${this.baseUrl}/admin/transactions/paginated?page=${page}&size=${size}`
+    ).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to load transactions';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** GET /admin/accounts - Admin only */
+  getAllAccounts() {
+    return this.http.get<any[]>(`${this.baseUrl}/admin/accounts`).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to load accounts';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** PUT /admin/accounts/{id} - Admin only */
+  updateAccount(accountId: string, body: any) {
+    return this.http.put<any>(`${this.baseUrl}/admin/accounts/${encodeURIComponent(accountId)}`, body).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to update account';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** DELETE /admin/accounts/{id} - Admin only */
+  deactivateAccount(accountId: string) {
+    return this.http.delete<void>(`${this.baseUrl}/admin/accounts/${encodeURIComponent(accountId)}`).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to deactivate account';
+        return throwError(() => new Error(msg));
+      })
+    );
   }
 }

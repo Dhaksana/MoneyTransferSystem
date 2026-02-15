@@ -18,38 +18,55 @@ import { AuthService } from '../services/auth.service';
 
     <form #f="ngForm" (ngSubmit)="submit(f)" class="card p-3 shadow-soft">
       <div class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label">From Account ID</label>
-            <input class="form-control"
-                   type="text"
-                   name="fromAccountId"
-                   [(ngModel)]="fromAccountId"
-                   required />
-          </div>
-
         <div class="col-md-4">
-          <label class="form-label">To Account ID</label>
+          <label class="form-label">From Account ID</label>
           <input class="form-control"
                  type="text"
-                 name="toAccountId"
-                 [(ngModel)]="toAccountId"
+                 name="fromAccountId"
+                 [(ngModel)]="fromAccountId"
                  required />
         </div>
 
         <div class="col-md-4">
+          <label class="form-label">To Account ID <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input class="form-control"
+                   type="text"
+                   name="toAccountId"
+                   [(ngModel)]="toAccountId"
+                   (blur)="verifyToAccount()"
+                   (change)="verifyToAccount()"
+                   required />
+            <button class="btn btn-outline-secondary" type="button" (click)="verifyToAccount()" [disabled]="verifyingAccount">
+              {{ verifyingAccount ? 'Verifying...' : 'Verify' }}
+            </button>
+          </div>
+          <small *ngIf="toAccountVerified" class="text-success d-block mt-1">
+            ✓ {{ toAccountHolderName }}
+          </small>
+          <small *ngIf="!toAccountVerified && toAccountId" class="text-danger d-block mt-1">
+            Account not verified
+          </small>
+        </div>
+
+        <div class="col-md-4">
           <label class="form-label">Amount</label>
-          <input class="form-control"
+          <input class="form-control amount-input"
                  type="number"
                  name="amount"
                  [(ngModel)]="amount"
                  step="0.01"
-                 required
-                 min="0.01" />
+                 min="0.01"
+                 [disabled]="!toAccountVerified"
+                 required />
+          <small *ngIf="!toAccountVerified" class="text-muted d-block mt-1">
+            Verify account to enter amount
+          </small>
         </div>
       </div>
 
       <div class="mt-3 d-flex gap-2 align-items-center">
-        <button class="btn btn-primary" type="submit" [disabled]="f.invalid || loading">
+        <button class="btn btn-primary" type="submit" [disabled]="f.invalid || loading || !toAccountVerified">
           {{ loading ? 'Sending…' : 'Send' }}
         </button>
 
@@ -70,6 +87,7 @@ import { AuthService } from '../services/auth.service';
     </form>
   </div>
   `,
+  styleUrls: ['./transfer-money.component.css'],
 })
 export class TransferMoneyComponent {
   constructor(
@@ -85,6 +103,9 @@ export class TransferMoneyComponent {
 
   fromAccountId = '';
   toAccountId!: string;
+  toAccountHolderName: string | null = null;
+  toAccountVerified = false;
+  verifyingAccount = false;
   amount!: number;
   idempotencyKey = '';
 
@@ -110,37 +131,61 @@ export class TransferMoneyComponent {
       return;
     }
 
+    // Account must be verified before transfer
+    if (!this.toAccountVerified) {
+      this.errorMsg = 'Please verify the recipient account first.';
+      return;
+    }
+
     this.loading = true;
     this.errorMsg = null;
     this.successMsg = null;
     this.lastResponse = null;
 
-    // Verify payee account exists before attempting transfer
-    this.api.accountExists(this.toAccountId).subscribe({
-      next: (exists) => {
-        if (!exists) {
-          this.errorMsg = 'Payee account does not exist.';
+    // Proceed directly with transfer since account is already verified
+    this.api.transfer(this.fromAccountId, this.toAccountId, this.amount, this.idempotencyKey || undefined)
+      .subscribe({
+        next: (res) => {
+          this.lastResponse = res;
+          this.successMsg = 'Transfer request accepted.';
           this.loading = false;
-          return;
+        },
+        error: (e: Error) => {
+          this.errorMsg = e.message || 'Transfer failed';
+          this.loading = false;
         }
+      });
+  }
 
-        // proceed with transfer
-        this.api.transfer(this.fromAccountId, this.toAccountId, this.amount, this.idempotencyKey || undefined)
-          .subscribe({
-            next: (res) => {
-              this.lastResponse = res;
-              this.successMsg = 'Transfer request accepted.';
-              this.loading = false;
-            },
-            error: (e: Error) => {
-              this.errorMsg = e.message || 'Transfer failed';
-              this.loading = false;
-            }
-          });
+  // Verify the To Account ID and fetch holder name
+  verifyToAccount() {
+    if (!this.toAccountId || this.toAccountId.trim() === '') {
+      this.toAccountVerified = false;
+      this.toAccountHolderName = null;
+      this.errorMsg = null;
+      return;
+    }
+
+    this.verifyingAccount = true;
+    this.errorMsg = null;
+
+    this.api.getAccountById(this.toAccountId).subscribe({
+      next: (account: any) => {
+        if (account && account.holderName) {
+          this.toAccountVerified = true;
+          this.toAccountHolderName = account.holderName;
+        } else {
+          this.toAccountVerified = false;
+          this.toAccountHolderName = null;
+          this.errorMsg = 'Account not found';
+        }
+        this.verifyingAccount = false;
       },
       error: (e: Error) => {
-        this.errorMsg = e.message || 'Failed to verify payee account';
-        this.loading = false;
+        this.toAccountVerified = false;
+        this.toAccountHolderName = null;
+        this.errorMsg = e.message || 'Failed to verify account';
+        this.verifyingAccount = false;
       }
     });
   }

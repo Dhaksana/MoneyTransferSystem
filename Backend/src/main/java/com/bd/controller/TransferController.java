@@ -1,6 +1,7 @@
 package com.bd.controller;
 
 import com.bd.dto.TransactionHistoryDTO;
+import com.bd.dto.PaginatedResponse;
 import org.springframework.web.bind.annotation.*;
 
 import com.bd.dto.TransferRequestDTO;
@@ -33,10 +34,18 @@ public class TransferController {
         return transferService.transfer(request);
     }
 
-
     // ✅ GET /api/v1/transfers/history/{accountId}
     @GetMapping("/history/{accountId}")
     public List<TransactionHistoryDTO> history(@PathVariable String accountId) {
         return transferService.getTransactionHistory(accountId);
+    }
+
+    // ✅ GET /api/v1/transfers/history/{accountId}/paginated?page=0&size=10
+    @GetMapping("/history/{accountId}/paginated")
+    public PaginatedResponse<TransactionHistoryDTO> historyPaginated(
+            @PathVariable String accountId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return transferService.getTransactionHistoryPaginated(accountId, page, size);
     }
 }

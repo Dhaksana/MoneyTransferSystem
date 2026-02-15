@@ -24,6 +24,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
   acc: string | null = null;
 
   balance: number | null = null;
+  monthlyReceived: number = 0;
+  monthlyExpense: number = 0;
+  recentTransactions: any[] = [];
   errorMsg: string | null = null;
 
   private destroy$ = new Subject<void>();
@@ -38,8 +41,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
         // load balance for logged-in account
         if (this.acc != null) {
           this.loadBalance(this.acc);
+          this.loadMonthlyStats(this.acc);
         } else {
           this.balance = null;
+          this.monthlyReceived = 0;
+          this.monthlyExpense = 0;
+          this.recentTransactions = [];
         }
       });
   }
@@ -58,5 +65,67 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.balance = null;
       },
     });
+  }
+
+  loadMonthlyStats(accountId: string) {
+    this.api.getHistoryByAccount(accountId).subscribe({
+      next: (transactions: any[]) => {
+        this.calculateMonthlyTotals(transactions, accountId);
+        this.extractRecentTransactions(transactions);
+      },
+      error: (e: { message: string }) => {
+        console.error('Failed to load transaction history:', e.message);
+        this.monthlyReceived = 0;
+        this.monthlyExpense = 0;
+        this.recentTransactions = [];
+      },
+    });
+  }
+
+  private calculateMonthlyTotals(transactions: any[], accountId: string) {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    this.monthlyReceived = 0;
+    this.monthlyExpense = 0;
+
+    transactions.forEach((txn) => {
+      const txnDate = new Date(txn.createdOn);
+      // Only count successful transactions from current month
+      if (
+        txnDate.getMonth() === currentMonth &&
+        txnDate.getFullYear() === currentYear &&
+        txn.status?.toUpperCase() === 'SUCCESS'
+      ) {
+        if (txn.toAccountId === accountId) {
+          this.monthlyReceived += txn.amount;
+        } else if (txn.fromAccountId === accountId) {
+          this.monthlyExpense += txn.amount;
+        }
+      }
+    });
+  }
+
+  private extractRecentTransactions(transactions: any[]) {
+    // Sort by date (newest first) and take last 5
+    this.recentTransactions = transactions
+      .sort(
+        (a, b) =>
+          new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()
+      )
+      .slice(0, 5);
+  }
+
+  statusBadgeClass(status?: string): string {
+    const s = (status || '').toUpperCase();
+    if (s === 'SUCCESS') return 'bg-success';
+    if (s === 'PENDING') return 'bg-warning';
+    return 'bg-danger';
+  }
+
+  getRowClassRecent(txn: any): string {
+    const status = (txn.status || '').toUpperCase();
+    return status === 'FAILED' ? 'table-danger' : '';
   }
 }

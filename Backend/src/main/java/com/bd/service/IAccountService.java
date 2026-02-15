@@ -16,6 +16,12 @@ public interface IAccountService {
     Double getBalance(String id);
 
     List<AccountDTO> getAllAccounts();
+    
     boolean accountExists(String id);
+    
+    // Admin operations
+    AccountDTO updateAccount(String id, AccountDTO accountDTO);
+    
+    void deactivateAccount(String id);
 
 }

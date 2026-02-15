@@ -6,14 +6,14 @@
     </div>
 
     <nav class="d-flex gap-2">
-      <a class="btn btn-light btn-sm" routerLink="/welcome" routerLinkActive="active-link">Welcome</a>
-      <a class="btn btn-light btn-sm" routerLink="/login" routerLinkActive="active-link" *ngIf="!(auth.isLoggedIn$ | async)">Login</a>
+      <a class="btn btn-nav btn-sm" routerLink="/welcome" routerLinkActive="active-link">Welcome</a>
+      <a class="btn btn-nav btn-sm" routerLink="/login" routerLinkActive="active-link" *ngIf="!(auth.isLoggedIn$ | async)">Login</a>
 
       <ng-container *ngIf="auth.isLoggedIn$ | async">
-        <a class="btn btn-light btn-sm" routerLink="/profile" routerLinkActive="active-link">Profile</a>
-        <a class="btn btn-light btn-sm" routerLink="/transactions" routerLinkActive="active-link">History</a>
-        <a class="btn btn-light btn-sm" routerLink="/transfer" routerLinkActive="active-link">Transfer</a>
-        <button class="btn btn-outline-danger btn-sm" (click)="logout()">Logout</button>
+        <a class="btn btn-nav btn-sm" routerLink="/profile" routerLinkActive="active-link">Profile</a>
+        <a class="btn btn-nav btn-sm" routerLink="/transactions" routerLinkActive="active-link">History</a>
+        <a class="btn btn-nav btn-sm" routerLink="/transfer" routerLinkActive="active-link">Transfer</a>
+        <button class="btn btn-logout btn-sm" (click)="logout()">Logout</button>
       </ng-container>
     </nav>
   </div>

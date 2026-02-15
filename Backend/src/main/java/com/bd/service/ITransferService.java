@@ -3,13 +3,20 @@ package com.bd.service;
 import com.bd.dto.TransactionHistoryDTO;
 import com.bd.dto.TransferRequestDTO;
 import com.bd.dto.TransferResponseDTO;
+import com.bd.dto.PaginatedResponse;
 
 import java.util.List;
 
 public interface ITransferService {
     TransferResponseDTO transfer(TransferRequestDTO request);
 
-    // 🔹 HISTORY API
-        List<TransactionHistoryDTO> getTransactionHistory(
-            String accountId);
+    // 🔹 HISTORY API (Legacy - returns all)
+    List<TransactionHistoryDTO> getTransactionHistory(String accountId);
+
+    // 🔹 HISTORY API WITH PAGINATION
+    PaginatedResponse<TransactionHistoryDTO> getTransactionHistoryPaginated(
+            String accountId, int page, int size);
+
+    // 🔹 ADMIN API - GET ALL TRANSACTIONS IN SYSTEM (paginated)
+    PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size);
 }

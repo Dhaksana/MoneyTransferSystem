@@ -69,4 +69,31 @@ public class AccountService implements IAccountService {
         return accountRepo.existsById(id);
     }
 
+    @Override
+    public AccountDTO updateAccount(String id, AccountDTO accountDTO) {
+        Account account = accountRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with id " + id));
+        
+        // Admin can update holder name, status, and balance
+        if (accountDTO.getHolderName() != null && !accountDTO.getHolderName().isBlank()) {
+            account.setHolderName(accountDTO.getHolderName());
+        }
+        if (accountDTO.getStatus() != null && !accountDTO.getStatus().isBlank()) {
+            account.setStatus(accountDTO.getStatus());
+        }
+        if (accountDTO.getBalance() >= 0) {
+            account.setBalance(accountDTO.getBalance());
+        }
+        
+        Account updated = accountRepo.save(account);
+        return AccountDTO.toDTO(updated);
+    }
+
+    @Override
+    public void deactivateAccount(String id) {
+        Account account = accountRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found with id " + id));
+        account.setStatus("INACTIVE");
+        accountRepo.save(account);
+    }
 }

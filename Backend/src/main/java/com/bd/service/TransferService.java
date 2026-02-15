@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bd.dto.TransactionHistoryDTO;
 import com.bd.dto.TransferRequestDTO;
 import com.bd.dto.TransferResponseDTO;
+import com.bd.dto.PaginatedResponse;
 import com.bd.model.Account;
 import com.bd.model.TransactionLog;
 import com.bd.repository.AccountRepository;
@@ -119,5 +120,62 @@ public class TransferService implements ITransferService {
                         t.getCreatedOn()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PaginatedResponse<TransactionHistoryDTO> getTransactionHistoryPaginated(
+            String accountId, int page, int size) {
+        // Fetch all transactions for the account
+        List<TransactionLog> allTransactions = logRepo.findTransactionHistory(accountId);
+        
+        // Calculate pagination
+        int totalElements = allTransactions.size();
+        int start = page * size;
+        int end = Math.min(start + size, totalElements);
+        
+        // Get page content
+        List<TransactionHistoryDTO> pageContent = allTransactions
+                .subList(start, end)
+                .stream()
+                .map(t -> new TransactionHistoryDTO(
+                        t.getId(),
+                        t.getFromAccountId(),
+                        t.getToAccountId(),
+                        t.getAmount(),
+                        t.getStatus(),
+                        t.getFailureReason(),
+                        t.getCreatedOn()
+                ))
+                .collect(Collectors.toList());
+        
+        return new PaginatedResponse<>(pageContent, page, size, totalElements);
+    }
+
+    @Override
+    public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size) {
+        // Fetch all transactions in the system (admin only)
+        List<TransactionLog> allTransactions = logRepo.findAll();
+        
+        // Calculate pagination
+        int totalElements = allTransactions.size();
+        int start = page * size;
+        int end = Math.min(start + size, totalElements);
+        
+        // Get page content
+        List<TransactionHistoryDTO> pageContent = allTransactions
+                .subList(start, end)
+                .stream()
+                .map(t -> new TransactionHistoryDTO(
+                        t.getId(),
+                        t.getFromAccountId(),
+                        t.getToAccountId(),
+                        t.getAmount(),
+                        t.getStatus(),
+                        t.getFailureReason(),
+                        t.getCreatedOn()
+                ))
+                .collect(Collectors.toList());
+        
+        return new PaginatedResponse<>(pageContent, page, size, totalElements);
     }
 }
