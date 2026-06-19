@@ -1,0 +1,131 @@
+<section class="landing">
+
+  <header class="topnav">
+    <div class="brand">
+      <span class="brand-mark">M</span>
+      <strong>Money-ger</strong>
+    </div>
+    <div class="topnav-actions">
+      <button mat-stroked-button (click)="openDrawer('login')">Sign In</button>
+      <button mat-flat-button color="primary" (click)="openDrawer('signup')">Open Account</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">Private Banking</span>
+      <h1>Your money,<br>intelligently managed.</h1>
+      <p class="hero-sub">Secure transfers, real-time analytics, and rewards — all in one place.</p>
+      <div class="hero-cta">
+        <button mat-flat-button color="primary" (click)="openDrawer('login')">Get Started</button>
+        <button mat-stroked-button (click)="openDrawer('signup')">Create Free Account</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="mock-card">
+        <div class="mock-bar"></div>
+        <div class="mock-row"></div>
+        <div class="mock-row short"></div>
+        <div class="mock-row"></div>
+        <div class="mock-bar accent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features-section">
+    <h2>Everything you need</h2>
+    <p class="section-sub">Modern banking tools designed for individuals and administrators.</p>
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let f of features">
+        <mat-icon>{{ f.icon }}</mat-icon>
+        <h3>{{ f.title }}</h3>
+        <p>{{ f.desc }}</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="landing-footer">
+    <p>&copy; 2026 Money-ger Private Banking</p>
+  </footer>
+
+</section>
+
+<div class="drawer-backdrop" [class.show]="drawerOpen" (click)="closeDrawer()"></div>
+
+<aside class="auth-drawer" [class.open]="drawerOpen">
+  <div class="drawer-head">
+    <div class="drawer-brand">
+      <span class="brand-mark">M</span>
+      <strong>Money-ger</strong>
+    </div>
+    <button mat-icon-button (click)="closeDrawer()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="drawer-tabs">
+    <button [class.active]="authMode === 'login'" (click)="authMode = 'login'">Sign In</button>
+    <button [class.active]="authMode === 'signup'" (click)="authMode = 'signup'">Sign Up</button>
+  </div>
+
+  <div class="drawer-body">
+    <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" *ngIf="authMode === 'login'">
+      <h2>Welcome back</h2>
+      <p class="form-sub">Sign in to your account</p>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input matInput name="u" [(ngModel)]="loginUsername" required />
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" name="p" [(ngModel)]="loginPassword" required />
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="loginForm.invalid || loginLoading">
+        <mat-spinner *ngIf="loginLoading" diameter="18"></mat-spinner>
+        {{ loginLoading ? 'Signing in…' : 'Sign In' }}
+      </button>
+
+      <p *ngIf="loginError" class="form-error">{{ loginError }}</p>
+    </form>
+
+    <form #signupForm="ngForm" (ngSubmit)="onSignup(signupForm)" *ngIf="authMode === 'signup'">
+      <h2>Create account</h2>
+      <p class="form-sub">Open your digital banking profile</p>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input matInput name="su" [(ngModel)]="signupUsername" required />
+        <mat-icon matSuffix>alternate_email</mat-icon>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Full name</mat-label>
+        <input matInput name="sh" [(ngModel)]="signupHolderName" required />
+        <mat-icon matSuffix>badge</mat-icon>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" name="sp" [(ngModel)]="signupPassword" required />
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error>Required</mat-error>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="signupForm.invalid || signupLoading">
+        <mat-spinner *ngIf="signupLoading" diameter="18"></mat-spinner>
+        {{ signupLoading ? 'Creating…' : 'Create Account' }}
+      </button>
+
+      <p *ngIf="signupError" class="form-error">{{ signupError }}</p>
+    </form>
+  </div>
+</aside>

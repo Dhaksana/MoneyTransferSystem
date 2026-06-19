@@ -9,15 +9,14 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class MoneyTransferSystemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MoneyTransferSystemApplication.class, args);
-		
 		Dotenv dotenv = Dotenv.configure()
                 .ignoreIfMissing()
                 .load();
-
         dotenv.entries().forEach(e ->
                 System.setProperty(e.getKey(), e.getValue())
         );
+
+		SpringApplication.run(MoneyTransferSystemApplication.class, args);
 	}
 
 }

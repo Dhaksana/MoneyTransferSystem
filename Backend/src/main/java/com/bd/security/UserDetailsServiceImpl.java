@@ -23,6 +23,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser u = users.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        return new User(u.getUsername(), u.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + u.getRole())));
+        boolean active = "ACTIVE".equalsIgnoreCase(u.getStatus());
+        return new User(
+                u.getUsername(),
+                u.getPassword(),
+                active,
+                true,
+                true,
+                active,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + u.getRole()))
+        );
     }
 }

@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { WelcomeComponent } from './welcome.component';
 
 describe('WelcomeComponent', () => {
@@ -8,10 +10,14 @@ describe('WelcomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WelcomeComponent]
-    })
-    .compileComponents();
-    
+      imports: [WelcomeComponent, NoopAnimationsModule],
+      providers: [
+        provideHttpClient(),
+        provideRouter([]),
+        { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' }
+      ]
+    }).compileComponents();
+
     fixture = TestBed.createComponent(WelcomeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

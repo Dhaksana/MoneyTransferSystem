@@ -11,3 +11,13 @@ export const authGuard: CanActivateFn = (route, state) => {
   router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
   return false;
 };
+
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.isLoggedInSync() && auth.role === 'ADMIN') return true;
+
+  router.navigate(['/unauthorized']);
+  return false;
+};

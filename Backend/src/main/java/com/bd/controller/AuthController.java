@@ -4,6 +4,8 @@ package com.bd.controller;
 import com.bd.dto.LoginRequest;
 import com.bd.dto.LoginResponse;
 import com.bd.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,13 +14,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(
-        origins = "http://localhost:4200",
-        allowedHeaders = "*",
-        methods = { RequestMethod.POST, RequestMethod.OPTIONS },
-        allowCredentials = "true",
-        maxAge = 3600
-)
+@Validated
 public class AuthController {
 
     private final AuthService auth;
@@ -28,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         Optional<LoginResponse> resp = auth.login(request);
         return resp.<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(401).body(

@@ -1,24 +1,17 @@
 package com.bd.controller;
 
 import com.bd.dto.TransactionHistoryDTO;
-import org.springframework.web.bind.annotation.*;
-
 import com.bd.dto.TransferRequestDTO;
 import com.bd.dto.TransferResponseDTO;
 import com.bd.service.ITransferService;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@CrossOrigin(
-        origins = "http://localhost:4200",
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-        allowCredentials = "true",   // only if you send cookies/Authorization header
-        maxAge = 3600,
-        exposedHeaders = {"Idempotency-Key"} // if you want FE to read this response header
-)
-
+@Validated
 @RequestMapping("/api/v1/transfers")
 public class TransferController {
 
@@ -29,7 +22,7 @@ public class TransferController {
     }
 
     @PostMapping
-    public TransferResponseDTO transfer(@RequestBody TransferRequestDTO request) {
+    public TransferResponseDTO transfer(@Valid @RequestBody TransferRequestDTO request) {
         return transferService.transfer(request);
     }
 

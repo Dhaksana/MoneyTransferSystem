@@ -1,77 +1,92 @@
-/* ===========================
-   Purple Themed Header/Footer
-   =========================== */
+.bank-shell {
+  min-height: 100vh;
+  background: var(--neutral-100);
+}
 
-/* HEADER */
-.app-header {
-  background: linear-gradient(90deg, rgba(124, 58, 237, 0.92), rgba(109, 40, 217, 0.92));
+.bank-sidebar {
+  width: 260px;
+  border: 0;
+  background: var(--neutral-900);
   color: #fff;
+  padding: 20px 12px;
+  transition: width 180ms ease;
+}
+
+.bank-sidebar.collapsed { width: 80px; }
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 4px 8px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin-bottom: 16px;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.brand-copy { display: grid; line-height: 1.2; }
+.brand-copy strong { font-family: Poppins, Inter, sans-serif; font-size: 17px; color: #fff; }
+.brand-copy span { color: var(--neutral-400); font-size: 11px; }
+
+.collapse-btn { color: var(--neutral-400); margin: 0 0 12px 4px; }
+
+.nav-stack { display: grid; gap: 2px; }
+.nav-stack a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 12px;
+  color: var(--neutral-300);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 120ms ease;
+  font-size: 14px;
+}
+.nav-stack a:hover { background: rgba(255,255,255,.06); color: #fff; }
+.nav-stack a.active { background: rgba(13,148,136,.15); color: var(--accent-light); }
+
+.topbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  backdrop-filter: saturate(160%) blur(10px);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.25);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  z-index: 10;
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(16px);
+  color: var(--neutral-800);
+  border-bottom: 1px solid var(--border);
 }
-
-/* Header Title */
-.app-title {
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.4px;
+.topbar-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; color: var(--neutral-500); }
+.spacer { flex: 1; }
+.profile-trigger { border-radius: 999px; color: var(--neutral-700); }
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
   color: #fff;
-  font-family: Poppins, Inter, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  margin-right: 6px;
 }
 
-/* Brand Dot */
-.brand-dot {
-  width: 12px;
-  height: 12px;
-  background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed 60%, #4c1d95 100%);
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.18);
+.workspace {
+  padding: 28px 32px;
+  min-height: calc(100vh - 64px);
 }
 
-/* MAIN AREA */
-.app-main {
-  min-height: calc(100vh - 120px);
-  padding-bottom: 2rem;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(124, 58, 237, 0.10), transparent 60%),
-    radial-gradient(800px 400px at -10% 10%, rgba(167, 139, 250, 0.24), transparent 60%),
-    linear-gradient(180deg, #fff 0%, #f7f5ff 60%, #f4f1ff 100%);
-  position: relative;
-}
-
-/* Subtle grid background */
-.app-main::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, rgba(76, 29, 149, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(76, 29, 149, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* FOOTER */
-.app-footer {
-  background: linear-gradient(180deg, rgba(124, 58, 237, 0.10), rgba(124, 58, 237, 0.20));
-  border-top: 1px solid rgba(124, 58, 237, 0.18);
-  color: #3b0764;
-  padding: 1rem 0;
-  backdrop-filter: blur(6px) saturate(180%);
-}
-
-/* Active link style */
-.active-link {
-  border: 1px solid #7c3aed !important;
-  color: #7c3aed !important;
-  background: rgba(124, 58, 237, 0.12) !important;
-  font-weight: 600;
-  border-radius: 6px;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.25);
+.public-shell {
+  min-height: 100vh;
+  background: var(--neutral-100);
 }

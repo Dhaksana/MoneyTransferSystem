@@ -1,9 +1,6 @@
 package com.bd.service;
 
-import java.util.ArrayList;
-
 import com.bd.dto.AccountDTO;
-import com.bd.model.Account;
 import java.util.List;
 
 
@@ -17,5 +14,6 @@ public interface IAccountService {
 
     List<AccountDTO> getAllAccounts();
     boolean accountExists(String id);
+    boolean accountNumberExists(String accountNumber);
 
 }

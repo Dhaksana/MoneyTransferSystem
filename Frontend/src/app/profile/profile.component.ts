@@ -5,13 +5,18 @@ import { RouterLink } from '@angular/router';
 import { BankingApiService } from '../services/banking-api.service';
 import { AuthService } from '../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
+import { TransferHistoryItem } from '../models/transfer.model';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss'],
+  styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   constructor(
@@ -25,6 +30,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   balance: number | null = null;
   errorMsg: string | null = null;
+  recentTransactions: TransferHistoryItem[] = [];
+  rewardPoints = 0;
+  loadingHistory = false;
 
   private destroy$ = new Subject<void>();
 
@@ -57,6 +65,21 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.errorMsg = e.message || 'Failed to load balance';
         this.balance = null;
       },
+    });
+    this.loadingHistory = true;
+    this.api.getHistoryByAccount(accountId).subscribe({
+      next: (items) => {
+        this.recentTransactions = items.slice(0, 5);
+        this.loadingHistory = false;
+      },
+      error: () => {
+        this.recentTransactions = [];
+        this.loadingHistory = false;
+      }
+    });
+    this.api.getRewardSummary().subscribe({
+      next: summary => this.rewardPoints = summary.currentPoints,
+      error: () => this.rewardPoints = 0
     });
   }
 }

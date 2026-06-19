@@ -8,4 +8,5 @@ import com.bd.model.AppUser;
 
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     Optional<AppUser> findByUsername(String username);
+    long countByStatus(String status);
 }

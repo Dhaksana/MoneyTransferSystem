@@ -1,0 +1,34 @@
+.dashboard { display: grid; gap: 24px; }
+.dashboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.eyebrow { margin: 0 0 6px; color: #0d9488; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+h1 { margin: 0; color: #27272a; font: 700 32px/1.15 Poppins, Inter, sans-serif; }
+.summary-grid { display: grid; grid-template-columns: minmax(280px, 1.2fr) repeat(2, minmax(240px, .8fr)); gap: 20px; }
+.glass-card { border-radius: 12px; background: white; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #e4e4e7; }
+.balance-card { background: linear-gradient(135deg, #0d9488, #0f766e); color: white; }
+.card-label { display: block; color: inherit; opacity: .76; font-weight: 700; margin-bottom: 10px; }
+.balance-card strong { display: block; font-size: 42px; letter-spacing: 0; margin-bottom: 8px; }
+.balance-card p { margin: 0; color: #ccfbf1; }
+.detail-row { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid #e4e4e7; }
+.detail-row:last-child { border-bottom: 0; }
+.detail-row span { color: #71717a; }
+.detail-row strong { color: #27272a; }
+.status-ok { color: #0d9488 !important; }
+.reward-points { color: #27272a; font-size: 42px; font-weight: 900; }
+.muted { color: #71717a; margin: 0; }
+.quick-actions { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 14px; }
+.quick-actions a { height: 52px; border-radius: 12px; background: white; color: #27272a; border: 1px solid #e4e4e7; }
+.quick-actions mat-icon { color: #0d9488; }
+.txn-list { display: grid; gap: 10px; }
+.txn-row { display: grid; grid-template-columns: 42px 1fr auto auto; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; background: #fafafa; }
+.txn-row mat-icon { color: #0d9488; }
+.txn-row div { display: grid; }
+.txn-row span { color: #71717a; font-size: 13px; }
+.txn-amount { color: #27272a !important; font-weight: 800; font-size: 15px !important; }
+.status-pill { padding: 5px 10px; border-radius: 999px; background: #dcfce7; color: #166534 !important; font-weight: 800; }
+.status-pill.failed { background: #fee2e2; color: #991b1b !important; }
+.empty-state { color: #71717a; padding: 18px 0; }
+.alert-text { color: #dc2626; font-weight: 700; }
+@media (max-width: 960px) {
+  .summary-grid, .quick-actions { grid-template-columns: 1fr; }
+  .dashboard-heading { align-items: flex-start; flex-direction: column; }
+}

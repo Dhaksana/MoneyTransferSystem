@@ -1,5 +1,7 @@
 package com.bd.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
@@ -8,17 +10,8 @@ import com.bd.dto.AccountDTO;
 import com.bd.service.IAccountService;
 
 @RestController
+@Validated
 @RequestMapping("/api/v1/accounts")
-
-@CrossOrigin(
-        origins = "http://localhost:4200",
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-        allowCredentials = "true",   // only if you send cookies/Authorization header
-        maxAge = 3600,
-        exposedHeaders = {"Idempotency-Key"} // if you want FE to read this response header
-)
-
 public class AccountController {
 
     private final IAccountService accountService;
@@ -29,7 +22,7 @@ public class AccountController {
 
     // CREATE
     @PostMapping
-    public AccountDTO createAccount(@RequestBody AccountDTO account) {
+    public AccountDTO createAccount(@Valid @RequestBody AccountDTO account) {
         return accountService.createAccount(account);
     }
 
@@ -54,6 +47,11 @@ public class AccountController {
     @GetMapping("/exists/{id}")
     public boolean accountExists(@PathVariable String id) {
         return accountService.accountExists(id);
+    }
+
+    @GetMapping("/exists/account-number/{accountNumber}")
+    public boolean accountNumberExists(@PathVariable String accountNumber) {
+        return accountService.accountNumberExists(accountNumber);
     }
 
 }

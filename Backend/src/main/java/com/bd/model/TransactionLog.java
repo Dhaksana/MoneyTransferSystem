@@ -3,60 +3,96 @@ package com.bd.model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "transaction_logs")
+@Table(name = "transaction_logs", indexes = {
+        @Index(name = "idx_transaction_from_account", columnList = "from_account_id"),
+        @Index(name = "idx_transaction_to_account", columnList = "to_account_id"),
+        @Index(name = "idx_transaction_status", columnList = "status"),
+        @Index(name = "idx_transaction_created_at", columnList = "created_at")
+})
 public class TransactionLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String fromAccountId;
+    @NotBlank
+    @Size(max = 100)
+    @Column(name = "reference_number", nullable = false, unique = true, length = 100)
+    private String referenceNumber;
 
-    @Column(nullable = false)
-    private String toAccountId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_account_id", nullable = false)
+    private Account senderAccount;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "to_account_id", nullable = false)
+    private Account receiverAccount;
+
+    @NotNull
     @Column(nullable = false)
     private Double amount;
 
-    @Column(nullable = false)
-    private String status; // SUCCESS / FAILED
+    @NotBlank
+    @Column(nullable = false, length = 20)
+    private String status;
 
+    @NotBlank
+    @Column(name = "transaction_type", nullable = false, length = 50)
+    private String transactionType;
+
+    @Column(name = "failure_reason", length = 512)
     private String failureReason;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "idempotency_key", unique = true, length = 128)
     private String idempotencyKey;
 
-    @Column(nullable = false)
-    private LocalDateTime createdOn;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @PrePersist
     public void onCreate() {
-        this.createdOn = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
-
-    // -------- getters & setters --------
 
     public Long getId() {
         return id;
     }
 
-    public String getFromAccountId() {
-        return fromAccountId;
+    public String getReferenceNumber() {
+        return referenceNumber;
     }
 
-    public void setFromAccountId(String fromAccountId) {
-        this.fromAccountId = fromAccountId;
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
+    }
+
+    public Account getSenderAccount() {
+        return senderAccount;
+    }
+
+    public String getFromAccountId() {
+        return senderAccount == null ? null : senderAccount.getId();
+    }
+
+    public void setSenderAccount(Account senderAccount) {
+        this.senderAccount = senderAccount;
+    }
+
+    public Account getReceiverAccount() {
+        return receiverAccount;
     }
 
     public String getToAccountId() {
-        return toAccountId;
+        return receiverAccount == null ? null : receiverAccount.getId();
     }
 
-    public void setToAccountId(String toAccountId) {
-        this.toAccountId = toAccountId;
+    public void setReceiverAccount(Account receiverAccount) {
+        this.receiverAccount = receiverAccount;
     }
 
     public Double getAmount() {
@@ -73,6 +109,14 @@ public class TransactionLog {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(String transactionType) {
+        this.transactionType = transactionType;
     }
 
     public String getFailureReason() {
@@ -92,6 +136,10 @@ public class TransactionLog {
     }
 
     public LocalDateTime getCreatedOn() {
-        return createdOn;
+        return createdAt;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

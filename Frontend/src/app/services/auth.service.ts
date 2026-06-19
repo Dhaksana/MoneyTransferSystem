@@ -6,12 +6,13 @@ import { BehaviorSubject, catchError, map, throwError } from 'rxjs';
 interface LoginResponse {
   authenticated?: boolean;
   token?: string;
-  user?: { id?: string; name?: string };
+  user?: { id?: string; name?: string; role?: string };
 }
 
 export interface AppUser {
   id: string | null;
   name: string;
+  role: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +43,7 @@ export class AuthService {
           // store name and id
           if (data.user?.name) localStorage.setItem('user_name', data.user.name);
           if (data.user?.id != null) localStorage.setItem('user_id', String(data.user.id));
+          if (data.user?.role) localStorage.setItem('user_role', data.user.role);
 
           this._isLoggedIn.next(true);
           this._currentUser.next(this.readUserFromStorage());
@@ -73,6 +75,7 @@ export class AuthService {
 
           if (data.user?.name) localStorage.setItem('user_name', data.user.name);
           if (data.user?.id != null) localStorage.setItem('user_id', String(data.user.id));
+          if (data.user?.role) localStorage.setItem('user_role', data.user.role);
 
           this._isLoggedIn.next(true);
           this._currentUser.next(this.readUserFromStorage());
@@ -90,12 +93,14 @@ export class AuthService {
     localStorage.removeItem('auth_flag');
     localStorage.removeItem('user_name');
     localStorage.removeItem('user_id');
+    localStorage.removeItem('user_role');
     this._isLoggedIn.next(false);
-    this._currentUser.next({ id: null, name: 'User' });
+    this._currentUser.next({ id: null, name: 'User', role: 'USER' });
   }
 
   get token(): string | null { return localStorage.getItem('auth_token'); }
   get userName(): string { return localStorage.getItem('user_name') || 'User'; }
+  get role(): string { return localStorage.getItem('user_role') || 'USER'; }
   get userId(): string | null {
     const raw = localStorage.getItem('user_id');
     return raw ?? null;
@@ -110,6 +115,7 @@ export class AuthService {
     const name = localStorage.getItem('user_name') || 'User';
     const raw = localStorage.getItem('user_id');
     const id = raw != null ? raw : null;
-    return { id, name };
+    const role = localStorage.getItem('user_role') || 'USER';
+    return { id, name, role };
   }
 }

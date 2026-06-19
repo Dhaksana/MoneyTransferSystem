@@ -25,17 +25,20 @@ public class AuthService {
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final AuditService auditService;
 
     public AuthService(AccountRepository accounts,
                        AppUserRepository users,
                        AuthenticationManager authManager,
                        JwtUtil jwtUtil,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       AuditService auditService) {
         this.accounts = accounts;
         this.users = users;
         this.authManager = authManager;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.auditService = auditService;
     }
 
     public Optional<LoginResponse> login(LoginRequest req) {
@@ -46,18 +49,24 @@ public class AuthService {
         try {
             authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
         } catch (Exception ex) {
+            if (req.getUsername() != null && !req.getUsername().isBlank()) {
+                auditService.log(req.getUsername(), "LOGIN_FAILED", "Invalid credentials or inactive account");
+            }
             return Optional.empty();
         }
 
         AppUser u = users.findByUsername(req.getUsername()).orElse(null);
         if (u == null) return Optional.empty();
+        if (!"ACTIVE".equalsIgnoreCase(u.getStatus())) return Optional.empty();
+
+        auditService.log(req.getUsername(), "LOGIN_SUCCESS", "User logged in successfully");
 
         String token = jwtUtil.generateToken(u.getUsername());
 
         String accountId = u.getAccountId();
         String displayName = u.getDisplayName();
 
-        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(accountId, displayName)));
+        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(accountId, displayName, u.getRole())));
     }
 
     /**
@@ -70,24 +79,33 @@ public class AuthService {
         if (!isStrongPassword(rawPassword)) return Optional.empty();
         if (users.findByUsername(username).isPresent()) return Optional.empty();
 
-        // Create bank Account with generated string id
+        AppUser u = new AppUser();
+        u.setUsername(username);
+        u.setFullName(holderName);
+        u.setEmail(toRegistrationEmail(username));
+        u.setPassword(passwordEncoder.encode(rawPassword));
+        u.setRole("USER");
+        u.setStatus("ACTIVE");
+        u.setDisplayName(holderName);
+        AppUser savedUser = users.save(u);
+
         Account acc = new Account();
         acc.setId(generateUniqueAccountId());
+        acc.setAccountNumber(acc.getId());
+        acc.setAccountType("SAVINGS");
         acc.setHolderName(holderName);
         acc.setBalance(0.0);
         acc.setStatus("ACTIVE");
+        acc.setUser(savedUser);
         Account saved = accounts.save(acc);
 
-        // Create AppUser
-        AppUser u = new AppUser();
-        u.setUsername(username);
-        u.setPassword(passwordEncoder.encode(rawPassword));
         u.setAccountId(saved.getId());
-        u.setDisplayName(holderName);
         users.save(u);
 
+        auditService.log(u.getUsername(), "REGISTER", "User registered with account " + saved.getId());
+
         String token = jwtUtil.generateToken(u.getUsername());
-        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName)));
+        return Optional.of(new LoginResponse(true, token, new LoginResponse.UserInfo(saved.getId(), holderName, u.getRole())));
     }
 
     private boolean isStrongPassword(String pwd) {
@@ -98,6 +116,13 @@ public class AuthService {
         boolean hasSymbol = pwd.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
         if (!hasSymbol) return false;
         return true;
+    }
+
+    private String toRegistrationEmail(String username) {
+        if (username.contains("@")) {
+            return username;
+        }
+        return username + "@mts.local";
     }
 
     private final SecureRandom rnd = new SecureRandom();
