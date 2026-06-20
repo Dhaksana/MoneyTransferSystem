@@ -9,5 +9,6 @@ public record TransactionHistoryDTO(
         Double amount,
         String status,
         String failureReason,
+        Integer rewardPoints,
         LocalDateTime createdOn
 ) {}

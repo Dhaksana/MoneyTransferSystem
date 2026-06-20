@@ -52,6 +52,22 @@
     </div>
   </div>
 
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h6 class="text-muted mb-3">Rewards</h6>
+      <div class="row">
+        <div class="col-6">
+          <p class="text-muted small mb-1">Total Points Earned</p>
+          <p class="fw-bold fs-5 text-primary mb-0">{{ totalRewardPoints }}</p>
+        </div>
+        <div class="col-6">
+          <p class="text-muted small mb-1">Reward Rules</p>
+          <p class="mb-0">{{ rewardRuleDescription }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Update Balance Form (Admin Only) -->
   <div *ngIf="showUpdateBalance && userRole === 'ADMIN'" class="card card-body shadow-sm mb-4 bg-light">
     <h5 class="mb-3">Update Account Balance</h5>
@@ -106,6 +122,34 @@
        [queryParams]="{ fromAccountId: acc }">
       Transfer Money
     </a>
+  </div>
+
+  <div *ngIf="rewardHistory.length > 0" class="card mt-4 shadow-sm">
+    <div class="card-header bg-light">
+      <h5 class="m-0">Recent Reward Activity</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Transaction</th>
+              <th>Reward Points</th>
+              <th>Amount</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reward of rewardHistory">
+              <td>{{ reward.transactionId }}</td>
+              <td>{{ reward.points }}</td>
+              <td>{{ reward.transactionAmount | currency:'INR':'symbol':'1.0-2' }}</td>
+              <td>{{ reward.createdOn | date:'short' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Recent Transactions -->

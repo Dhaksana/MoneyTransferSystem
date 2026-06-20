@@ -16,6 +16,7 @@ export interface TransferHistoryItem {
   amount: number;
   status: TxStatus;
   failureReason: string | null;
+  rewardPoints?: number;
   createdOn: string; // ISO
 }
 
@@ -67,6 +68,7 @@ export interface TransferHistoryItem {
               <th style="width: 10rem;">Amount</th>
               <th style="width: 10rem;">Status</th>
               <th style="width: 18rem;">Remark</th>
+              <th style="width: 12rem;">Rewards</th>
               <th style="width: 16rem;">Created On</th>
             </tr>
           </thead>
@@ -85,6 +87,12 @@ export interface TransferHistoryItem {
                 <span class="badge" [ngClass]="statusBadgeClass(txn.status)">
                   {{ txn.status?.toUpperCase() ?? '' }}
                 </span>
+              </td>
+              <td>
+                <span *ngIf="txn.rewardPoints && txn.rewardPoints > 0" class="badge bg-success">
+                  +{{ txn.rewardPoints }} pts
+                </span>
+                <span *ngIf="!txn.rewardPoints || txn.rewardPoints === 0" class="text-muted">0</span>
               </td>
               <td>{{ txn.failureReason }}</td>
               <td>{{ txn.createdOn | date:'medium' }}</td>

@@ -83,6 +83,7 @@ import { AuthService } from '../services/auth.service';
         <div>Transaction ID: {{ lastResponse?.transactionId }}</div>
         <div>Status: {{ lastResponse?.status }}</div>
         <div class="text-muted">{{ lastResponse?.message }}</div>
+        <div *ngIf="rewardMessage" class="mt-2"><strong>{{ rewardMessage }}</strong></div>
       </div>
     </form>
   </div>
@@ -112,6 +113,7 @@ export class TransferMoneyComponent {
   loading = false;
   errorMsg: string | null = null;
   successMsg: string | null = null;
+  rewardMessage: string | null = null;
   lastResponse: TransferResponseDTO | null = null;
 
   submit(f: NgForm) {
@@ -140,6 +142,7 @@ export class TransferMoneyComponent {
     this.loading = true;
     this.errorMsg = null;
     this.successMsg = null;
+    this.rewardMessage = null;
     this.lastResponse = null;
 
     // Proceed directly with transfer since account is already verified
@@ -148,6 +151,9 @@ export class TransferMoneyComponent {
         next: (res) => {
           this.lastResponse = res;
           this.successMsg = 'Transfer request accepted.';
+          this.rewardMessage = res.rewardPoints && res.rewardPoints > 0
+            ? `You earned ${res.rewardPoints} reward point${res.rewardPoints === 1 ? '' : 's'}!`
+            : 'This transfer did not qualify for reward points.';
           this.loading = false;
         },
         error: (e: Error) => {

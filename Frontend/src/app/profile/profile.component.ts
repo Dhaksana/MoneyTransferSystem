@@ -28,6 +28,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
   balance: number | null = null;
   monthlyReceived: number = 0;
   monthlyExpense: number = 0;
+  totalRewardPoints: number = 0;
+  rewardRuleDescription = 'Eligible transfers earn 1 point per ₹100 withdrawn on successful transfers above ₹100.';
+  rewardHistory: any[] = [];
   recentTransactions: any[] = [];
   errorMsg: string | null = null;
 
@@ -52,6 +55,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (this.acc != null) {
           this.loadBalance(this.acc);
           this.loadMonthlyStats(this.acc);
+          this.loadRewardSummary(this.acc);
+          this.loadRewardHistory(this.acc);
         } else {
           this.balance = null;
           this.monthlyReceived = 0;
@@ -168,6 +173,32 @@ export class ProfileComponent implements OnInit, OnDestroy {
           new Date(b.createdOn).getTime() - new Date(a.createdOn).getTime()
       )
       .slice(0, 5);
+  }
+
+  private loadRewardSummary(accountId: string) {
+    this.totalRewardPoints = 0;
+    this.api.getRewardSummary(accountId).subscribe({
+      next: (summary) => {
+        this.totalRewardPoints = summary?.totalPoints ?? 0;
+      },
+      error: (e: { message: string }) => {
+        console.error('Failed to load reward summary:', e.message);
+        this.totalRewardPoints = 0;
+      }
+    });
+  }
+
+  private loadRewardHistory(accountId: string) {
+    this.rewardHistory = [];
+    this.api.getRewardHistory(accountId).subscribe({
+      next: (history) => {
+        this.rewardHistory = history.slice(0, 5);
+      },
+      error: (e: { message: string }) => {
+        console.error('Failed to load reward history:', e.message);
+        this.rewardHistory = [];
+      }
+    });
   }
 
   statusBadgeClass(status?: string): string {

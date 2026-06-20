@@ -26,6 +26,9 @@ public class TransactionLog {
 
     private String failureReason;
 
+    @Column(nullable = false)
+    private Integer rewardPoints = 0;
+
     @Column(nullable = false, unique = true)
     private String idempotencyKey;
 
@@ -81,6 +84,14 @@ public class TransactionLog {
 
     public void setFailureReason(String failureReason) {
         this.failureReason = failureReason;
+    }
+
+    public Integer getRewardPoints() {
+        return rewardPoints;
+    }
+
+    public void setRewardPoints(Integer rewardPoints) {
+        this.rewardPoints = rewardPoints;
     }
 
     public String getIdempotencyKey() {

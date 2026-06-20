@@ -12,6 +12,7 @@ import com.bd.dto.TransferResponseDTO;
 import com.bd.dto.PaginatedResponse;
 import com.bd.model.Account;
 import com.bd.model.TransactionLog;
+import com.bd.service.RewardService;
 import com.bd.repository.AccountRepository;
 import com.bd.repository.TransactionLogRepository;
 
@@ -21,13 +22,16 @@ public class TransferService implements ITransferService {
     private final AccountRepository accountRepo;
     private final TransactionLogRepository logRepo;
     private final FailureLogService failureLogService;
+    private final RewardService rewardService;
 
     public TransferService(AccountRepository accountRepo,
                            TransactionLogRepository logRepo,
-                           FailureLogService failureLogService) {
+                           FailureLogService failureLogService,
+                           RewardService rewardService) {
         this.accountRepo = accountRepo;
         this.logRepo = logRepo;
         this.failureLogService = failureLogService;
+        this.rewardService = rewardService;
     }
 
     @Override
@@ -35,10 +39,10 @@ public class TransferService implements ITransferService {
     public TransferResponseDTO transfer(TransferRequestDTO request) {
         // First, ensure both accounts exist before doing any work
         if (!accountRepo.existsById(request.getFromAccountId())) {
-            return new TransferResponseDTO(null, "FAILED", "From account not found");
+            return new TransferResponseDTO(null, "FAILED", "From account not found", 0);
         }
         if (!accountRepo.existsById(request.getToAccountId())) {
-            return new TransferResponseDTO(null, "FAILED", "To account not found");
+            return new TransferResponseDTO(null, "FAILED", "To account not found", 0);
         }
 
         // Create log with request values (not yet persisted)
@@ -74,20 +78,32 @@ public class TransferService implements ITransferService {
             accountRepo.save(from);
             accountRepo.save(to);
 
-            // Save success log
+            // Save success log and reward details
             log.setStatus("SUCCESS");
+            int rewardPoints = rewardService.calculateRewardPoints(log.getAmount());
+            if (rewardService.isEligible(log)) {
+                log.setRewardPoints(rewardPoints);
+            } else {
+                log.setRewardPoints(0);
+            }
+
             logRepo.save(log);
+            if (log.getRewardPoints() != null && log.getRewardPoints() > 0) {
+                rewardService.grantReward(log);
+            }
 
             return new TransferResponseDTO(
                     log.getId(),
                     "SUCCESS",
-                    "Transfer completed successfully"
+                    "Transfer completed successfully",
+                    log.getRewardPoints()
             );
 
         } catch (Exception e) {
 
             // Save failure log in separate transaction (don't let save errors override response)
             log.setStatus("FAILED");
+            log.setRewardPoints(0);
             log.setFailureReason(e.getMessage());
             try {
                 failureLogService.saveFailureLog(log);
@@ -99,7 +115,8 @@ public class TransferService implements ITransferService {
             return new TransferResponseDTO(
                     log.getId(),
                     "FAILED",
-                    e.getMessage()
+                    e.getMessage(),
+                    0
             );
         }
     }
@@ -117,6 +134,7 @@ public class TransferService implements ITransferService {
                         t.getAmount(),
                         t.getStatus(),
                         t.getFailureReason(),
+                        t.getRewardPoints(),
                         t.getCreatedOn()
                 ))
                 .collect(Collectors.toList());
@@ -144,6 +162,7 @@ public class TransferService implements ITransferService {
                         t.getAmount(),
                         t.getStatus(),
                         t.getFailureReason(),
+                        t.getRewardPoints(),
                         t.getCreatedOn()
                 ))
                 .collect(Collectors.toList());
@@ -180,6 +199,7 @@ public class TransferService implements ITransferService {
                         t.getAmount(),
                         t.getStatus(),
                         t.getFailureReason(),
+                        t.getRewardPoints(),
                         t.getCreatedOn()
                 ))
                 .collect(Collectors.toList());
@@ -224,6 +244,7 @@ public class TransferService implements ITransferService {
                         t.getAmount(),
                         t.getStatus(),
                         t.getFailureReason(),
+                        t.getRewardPoints(),
                         t.getCreatedOn()
                 ))
                 .collect(Collectors.toList());

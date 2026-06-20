@@ -11,6 +11,7 @@ export interface TransferHistoryItem {
   amount: number;
   status: TxStatus;
   failureReason: string | null;
+  rewardPoints?: number;
   createdOn: string; // ISO date-time
 }
 
@@ -18,6 +19,24 @@ export interface TransferResponseDTO {
   transactionId: number;
   status: string;
   message: string;
+  rewardPoints?: number;
+}
+
+export interface RewardSummary {
+  accountId: string;
+  totalPoints: number;
+  rewardCount: number;
+  ruleDescription: string;
+}
+
+export interface RewardHistoryItem {
+  rewardId: number;
+  accountId: string;
+  transactionId: number;
+  points: number;
+  transactionAmount: number;
+  ruleDescription: string;
+  createdOn: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -128,6 +147,28 @@ export class BankingApiService {
         return throwError(() => new Error(msg));
       })
     );
+  }
+
+  /** GET /api/v1/rewards/account/{accountId}/summary -> RewardSummary */
+  getRewardSummary(accountId: string) {
+    return this.http.get<RewardSummary>(`${this.baseUrl}/rewards/account/${encodeURIComponent(accountId)}/summary`)
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          const msg = err.error?.message || err.error?.error || err.message || 'Failed to load reward summary';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
+  /** GET /api/v1/rewards/account/{accountId}/history -> RewardHistoryItem[] */
+  getRewardHistory(accountId: string) {
+    return this.http.get<RewardHistoryItem[]>(`${this.baseUrl}/rewards/account/${encodeURIComponent(accountId)}/history`)
+      .pipe(
+        catchError((err: HttpErrorResponse) => {
+          const msg = err.error?.message || err.error?.error || err.message || 'Failed to load reward history';
+          return throwError(() => new Error(msg));
+        })
+      );
   }
 
   /** GET /admin/transactions/paginated?page=0&size=10 - Admin only */
