@@ -38,12 +38,22 @@ public class AdminController {
         return accountService.getAllAccounts();
     }
 
-    // GET all transactions (paginated)
+    // GET accounts paginated with optional search
+    @GetMapping("/accounts/paginated")
+    public PaginatedResponse<AccountDTO> getAccountsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
+        return accountService.getAccountsPaginated(page, size, search);
+    }
+
+    // GET all transactions (paginated) with optional transactionId filter
     @GetMapping("/transactions/paginated")
     public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return transferService.getAllTransactionsPaginated(page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String transactionId) {
+        return transferService.getAllTransactionsPaginated(page, size, transactionId);
     }
 
     // UPDATE account details (unlock, change status, etc.)

@@ -17,7 +17,27 @@ import { BankingApiService, TransferHistoryItem } from '../services/banking-api.
     <div *ngIf="accountsError" class="alert alert-danger py-2">{{ accountsError }}</div>
 
     <div class="card mb-3" *ngIf="!loadingAccounts">
-      <div class="card-header">All Accounts</div>
+      <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <div>All Accounts</div>
+        <div class="input-group input-group-sm w-100 w-md-auto">
+          <input type="text" class="form-control" placeholder="Search account by ID"
+                 [(ngModel)]="accountSearch" (keyup.enter)="searchAccounts()" />
+          <button class="btn btn-outline-secondary" type="button" (click)="searchAccounts()">Search</button>
+        </div>
+      </div>
+      <div *ngIf="accountSearch?.trim()" class="card-body py-2">
+        <div class="alert alert-info mb-2">
+          Showing search results for <strong>{{ accountSearch }}</strong>. Use the search box to find a specific account ID.
+        </div>
+        <div *ngIf="selectedAccount" class="border rounded p-2 mb-3 bg-light">
+          <div class="row">
+            <div class="col-sm-4"><strong>ID:</strong> {{ selectedAccount.id || selectedAccount.accountId || selectedAccount.account_id }}</div>
+            <div class="col-sm-4"><strong>Holder:</strong> {{ selectedAccount.holderName }}</div>
+            <div class="col-sm-2"><strong>Status:</strong> {{ selectedAccount.status }}</div>
+            <div class="col-sm-2 text-end"><strong>Balance:</strong> {{ selectedAccount.balance | number:'1.2-2' }}</div>
+          </div>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-sm mb-0">
           <thead class="table-light">
@@ -66,13 +86,44 @@ import { BankingApiService, TransferHistoryItem } from '../services/banking-api.
           </tbody>
         </table>
       </div>
+      <div class="card-footer bg-light d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <div class="text-muted small">
+          Showing {{ accountCurrentPage * accountPageSize + 1 }} to {{ accountCurrentPage * accountPageSize + (accounts?.length || 0) }} of {{ accountTotalElements }} accounts
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <button class="btn btn-sm btn-outline-primary" (click)="accountPrevPage()" [disabled]="accountCurrentPage===0">← Prev</button>
+          <span class="badge bg-secondary">Page {{ accountCurrentPage + 1 }} of {{ accountTotalPages }}</span>
+          <button class="btn btn-sm btn-outline-primary" (click)="accountNextPage()" [disabled]="accountCurrentPage>=accountTotalPages-1">Next →</button>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="loadingTxns" class="alert alert-info py-2">Loading transactions…</div>
     <div *ngIf="txnsError" class="alert alert-danger py-2">{{ txnsError }}</div>
 
     <div class="card" *ngIf="!loadingTxns">
-      <div class="card-header">All Transactions</div>
+      <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <div>All Transactions</div>
+        <div class="input-group input-group-sm w-100 w-md-auto">
+          <input type="text" class="form-control" placeholder="Search transaction by ID"
+                 [(ngModel)]="transactionSearch" (keyup.enter)="searchTransactions()" />
+          <button class="btn btn-outline-secondary" type="button" (click)="searchTransactions()">Search</button>
+        </div>
+      </div>
+      <div *ngIf="transactionSearch?.trim()" class="card-body py-2">
+        <div class="alert alert-info mb-2">
+          Showing search results for <strong>{{ transactionSearch }}</strong>. Use the search box to find a specific transaction ID.
+        </div>
+        <div *ngIf="selectedTransaction" class="border rounded p-2 mb-3 bg-light">
+          <div class="row">
+            <div class="col-sm-2"><strong>ID:</strong> {{ selectedTransaction.transactionId }}</div>
+            <div class="col-sm-3"><strong>From:</strong> {{ selectedTransaction.fromAccountId }}</div>
+            <div class="col-sm-3"><strong>To:</strong> {{ selectedTransaction.toAccountId }}</div>
+            <div class="col-sm-2"><strong>Amount:</strong> {{ getAmountDisplay(selectedTransaction) }}</div>
+            <div class="col-sm-2"><strong>Status:</strong> <span class="badge" [ngClass]="statusBadgeClass(selectedTransaction.status)">{{ selectedTransaction.status }}</span></div>
+          </div>
+        </div>
+      </div>
       <div class="table-responsive">
         <table class="table table-hover mb-0">
           <thead class="table-light">
@@ -126,30 +177,46 @@ export class AdminDashboardComponent implements OnInit {
   accountsError: string | null = null;
   txnsError: string | null = null;
 
-  editingId: string | null = null;
-  editModel: any = { holderName: '', status: 'ACTIVE', balance: 0 };
-  savingEdit = false;
+  accountSearch = '';
+  accountCurrentPage = 0;
+  accountPageSize = 10;
+  accountTotalElements = 0;
+  accountTotalPages = 0;
 
+  transactionSearch = '';
   currentPage = 0;
   pageSize = 10;
   totalElements = 0;
   totalPages = 0;
 
+  editingId: string | null = null;
+  editModel: any = { holderName: '', status: 'ACTIVE', balance: 0 };
+  savingEdit = false;
+
+  selectedAccount: any | null = null;
+  selectedTransaction: TransferHistoryItem | null = null;
+
   constructor(private api: BankingApiService) {}
 
   ngOnInit(): void {
-    this.loadAccounts();
+    this.loadAccountsPage(0);
     this.loadTxnsPage(0);
   }
 
-  loadAccounts() {
+  loadAccountsPage(page: number) {
     this.loadingAccounts = true;
     this.accountsError = null;
-    this.api.getAllAccounts().subscribe({
-      next: (res: any[]) => { this.accounts = res || []; this.loadingAccounts = false; },
+    this.accountCurrentPage = page;
+    this.api.getAccountsPaginated(page, this.accountPageSize, this.accountSearch).subscribe({
+      next: (res) => {
+        this.accounts = res.content || [];
+        this.accountTotalElements = res.totalElements ?? this.accounts.length;
+        this.accountTotalPages = res.totalPages ?? Math.max(1, Math.ceil(this.accountTotalElements / this.accountPageSize));
+        this.selectedAccount = (this.accountSearch?.trim() && this.accounts.length > 0) ? this.accounts[0] : null;
+        this.loadingAccounts = false;
+      },
       error: (e: any) => {
         console.error('Admin accounts load failed', e);
-        // If HttpErrorResponse, show status and message
         const status = e?.status ? `Status ${e.status}` : '';
         const msg = e?.error?.message || e?.message || e?.statusText || JSON.stringify(e);
         this.accountsError = (status ? status + ': ' : '') + msg;
@@ -187,11 +254,11 @@ export class AdminDashboardComponent implements OnInit {
       next: (res) => {
         // If balance changed, update it separately
         if (this.editModel.balance !== undefined && this.editModel.balance !== null) {
-          this.api.updateBalance(id, this.editModel.balance).subscribe({
+              this.api.updateBalance(id, this.editModel.balance).subscribe({
             next: (balRes) => {
               this.savingEdit = false;
               this.cancelEdit();
-              this.loadAccounts();
+              this.loadAccountsPage(this.accountCurrentPage);
             },
             error: (e: any) => {
               this.savingEdit = false;
@@ -202,7 +269,7 @@ export class AdminDashboardComponent implements OnInit {
         } else {
           this.savingEdit = false;
           this.cancelEdit();
-          this.loadAccounts();
+          this.loadAccountsPage(this.accountCurrentPage);
         }
       },
       error: (e: any) => {
@@ -217,7 +284,7 @@ export class AdminDashboardComponent implements OnInit {
     if (!confirm('Deactivate this account?')) return;
     const id = a.accountId || a.account_id || a.id;
     this.api.deactivateAccount(id).subscribe({
-      next: () => this.loadAccounts(),
+      next: () => this.loadAccountsPage(this.accountCurrentPage),
       error: (e:any) => { this.accountsError = (e?.status ? 'Status '+e.status+': ' : '') + (e?.error?.message || e?.message || String(e)); }
     });
   }
@@ -226,12 +293,13 @@ export class AdminDashboardComponent implements OnInit {
     this.loadingTxns = true;
     this.txnsError = null;
     this.currentPage = page;
-    this.api.getAllTransactionsPaginated(page, this.pageSize).subscribe({
+    this.api.getAllTransactionsPaginated(page, this.pageSize, this.transactionSearch).subscribe({
       next: (res) => {
         this.txns = res.content || [];
         this.displayedTxns = this.txns;
         this.totalElements = res.totalElements ?? this.txns.length;
-        this.totalPages = res.totalPages ?? Math.ceil(this.totalElements / this.pageSize);
+        this.totalPages = res.totalPages ?? Math.max(1, Math.ceil(this.totalElements / this.pageSize));
+        this.selectedTransaction = (this.transactionSearch?.trim() && this.txns.length > 0) ? this.txns[0] : null;
         this.loadingTxns = false;
       },
       error: (e: any) => {
@@ -246,6 +314,12 @@ export class AdminDashboardComponent implements OnInit {
 
   nextPage() { if (this.currentPage < this.totalPages - 1) this.loadTxnsPage(this.currentPage + 1); }
   prevPage() { if (this.currentPage > 0) this.loadTxnsPage(this.currentPage - 1); }
+
+  accountNextPage() { if (this.accountCurrentPage < this.accountTotalPages - 1) this.loadAccountsPage(this.accountCurrentPage + 1); }
+  accountPrevPage() { if (this.accountCurrentPage > 0) this.loadAccountsPage(this.accountCurrentPage - 1); }
+
+  searchAccounts() { this.loadAccountsPage(0); }
+  searchTransactions() { this.loadTxnsPage(0); }
 
   getShowingFrom() { return this.totalElements ? (this.currentPage * this.pageSize) + 1 : 0; }
   getShowingTo() { return this.totalElements ? (this.currentPage * this.pageSize) + (this.displayedTxns?.length || 0) : 0; }

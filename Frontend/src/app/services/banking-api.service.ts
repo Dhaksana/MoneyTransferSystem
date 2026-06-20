@@ -4,6 +4,13 @@ import { catchError, map, throwError } from 'rxjs';
 
 export type TxStatus = 'ACTIVE' | 'INACTIVE' | 'SUCCESS' | 'FAILED' | 'PENDING' | string;
 
+export interface AccountItem {
+  id: string;
+  holderName: string;
+  balance: number;
+  status: string;
+}
+
 export interface TransferHistoryItem {
   transactionId: number;
   fromAccountId: string;
@@ -171,13 +178,29 @@ export class BankingApiService {
       );
   }
 
-  /** GET /admin/transactions/paginated?page=0&size=10 - Admin only */
-  getAllTransactionsPaginated(page: number = 0, size: number = 10) {
-    return this.http.get<PaginatedResponse<TransferHistoryItem>>(
-      `${this.baseUrl}/admin/transactions/paginated?page=${page}&size=${size}`
-    ).pipe(
+  /** GET /admin/transactions/paginated?page=0&size=10&transactionId=... - Admin only */
+  getAllTransactionsPaginated(page: number = 0, size: number = 10, transactionId?: string) {
+    let url = `${this.baseUrl}/admin/transactions/paginated?page=${page}&size=${size}`;
+    if (transactionId && transactionId.trim()) {
+      url += `&transactionId=${encodeURIComponent(transactionId.trim())}`;
+    }
+    return this.http.get<PaginatedResponse<TransferHistoryItem>>(url).pipe(
       catchError((err: HttpErrorResponse) => {
         const msg = err.error?.message || err.error?.error || err.message || 'Failed to load transactions';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /** GET /admin/accounts/paginated?page=0&size=10&search=... - Admin only */
+  getAccountsPaginated(page: number = 0, size: number = 10, search?: string) {
+    let url = `${this.baseUrl}/admin/accounts/paginated?page=${page}&size=${size}`;
+    if (search && search.trim()) {
+      url += `&search=${encodeURIComponent(search.trim())}`;
+    }
+    return this.http.get<PaginatedResponse<AccountItem>>(url).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const msg = err.error?.message || err.error?.error || err.message || 'Failed to load accounts';
         return throwError(() => new Error(msg));
       })
     );

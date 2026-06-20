@@ -23,4 +23,6 @@ public interface ITransferService {
 
     // ADMIN API - GET ALL TRANSACTIONS IN SYSTEM (paginated)
     PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size);
+
+    PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size, String transactionId);
 }

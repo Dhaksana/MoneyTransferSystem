@@ -109,10 +109,10 @@ export class AuthService {
     return raw ?? null;
   }
   get userRole(): string { return localStorage.getItem('user_role') || 'USER'; }
-  isLoggedInSync(): boolean { return this._isLoggedIn.value; }
+  isLoggedInSync(): boolean { return this._isLoggedIn.value && !!this.token; }
 
   private hasSession(): boolean {
-    return !!localStorage.getItem('auth_token') || !!localStorage.getItem('auth_flag');
+    return !!this.token;
   }
 
   private readUserFromStorage(): AppUser {

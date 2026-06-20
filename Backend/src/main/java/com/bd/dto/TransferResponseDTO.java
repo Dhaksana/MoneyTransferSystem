@@ -14,6 +14,11 @@ public class TransferResponseDTO {
         this.rewardPoints = rewardPoints;
     }
 
+    // Backwards-compatible constructor used by older tests/code paths
+    public TransferResponseDTO(Long transactionId, String status, String message) {
+        this(transactionId, status, message, null);
+    }
+
     public Long getTransactionId() { return transactionId; }
     public String getStatus() { return status; }
     public String getMessage() { return message; }

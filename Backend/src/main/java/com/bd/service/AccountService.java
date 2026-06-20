@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.bd.dto.AccountDTO;
+import com.bd.dto.PaginatedResponse;
 import com.bd.model.Account;
 import com.bd.repository.AccountRepository;
 
@@ -63,6 +64,24 @@ public class AccountService implements IAccountService {
                 .stream()
                 .map(AccountDTO::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PaginatedResponse<AccountDTO> getAccountsPaginated(int page, int size, String search) {
+        List<AccountDTO> allAccounts = accountRepo.findAll().stream()
+                .map(AccountDTO::toDTO)
+                .filter(acc -> {
+                    if (search == null || search.isBlank()) return true;
+                    return acc.getId() != null && acc.getId().toLowerCase().contains(search.toLowerCase());
+                })
+                .collect(Collectors.toList());
+
+        int totalElements = allAccounts.size();
+        int start = Math.max(0, page * size);
+        int end = Math.min(start + size, totalElements);
+
+        List<AccountDTO> pageContent = allAccounts.subList(start, end);
+        return new PaginatedResponse<>(pageContent, page, size, totalElements);
     }
     @Override
     public boolean accountExists(String id) {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bd.dto.TransactionHistoryDTO;
@@ -24,6 +25,7 @@ public class TransferService implements ITransferService {
     private final FailureLogService failureLogService;
     private final RewardService rewardService;
 
+    @Autowired
     public TransferService(AccountRepository accountRepo,
                            TransactionLogRepository logRepo,
                            FailureLogService failureLogService,
@@ -32,6 +34,16 @@ public class TransferService implements ITransferService {
         this.logRepo = logRepo;
         this.failureLogService = failureLogService;
         this.rewardService = rewardService;
+    }
+
+    // Backwards-compatible constructor for tests that don't provide RewardService
+    public TransferService(AccountRepository accountRepo,
+                           TransactionLogRepository logRepo,
+                           FailureLogService failureLogService) {
+        this.accountRepo = accountRepo;
+        this.logRepo = logRepo;
+        this.failureLogService = failureLogService;
+        this.rewardService = null;
     }
 
     @Override
@@ -80,15 +92,16 @@ public class TransferService implements ITransferService {
 
             // Save success log and reward details
             log.setStatus("SUCCESS");
-            int rewardPoints = rewardService.calculateRewardPoints(log.getAmount());
-            if (rewardService.isEligible(log)) {
+            int rewardPoints = (rewardService != null) ? rewardService.calculateRewardPoints(log.getAmount()) : 0;
+            boolean eligible = (rewardService != null) ? rewardService.isEligible(log) : false;
+            if (eligible) {
                 log.setRewardPoints(rewardPoints);
             } else {
                 log.setRewardPoints(0);
             }
 
             logRepo.save(log);
-            if (log.getRewardPoints() != null && log.getRewardPoints() > 0) {
+            if (rewardService != null && log.getRewardPoints() != null && log.getRewardPoints() > 0) {
                 rewardService.grantReward(log);
             }
 
@@ -225,12 +238,23 @@ public class TransferService implements ITransferService {
 
     @Override
     public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size) {
+        return getAllTransactionsPaginated(page, size, null);
+    }
+
+    @Override
+    public PaginatedResponse<TransactionHistoryDTO> getAllTransactionsPaginated(int page, int size, String transactionId) {
         // Fetch all transactions in the system (admin only)
         List<TransactionLog> allTransactions = logRepo.findAll();
+
+        if (transactionId != null && !transactionId.isBlank()) {
+            allTransactions = allTransactions.stream()
+                    .filter(t -> t.getId() != null && t.getId().toString().contains(transactionId.trim()))
+                    .collect(Collectors.toList());
+        }
         
         // Calculate pagination
         int totalElements = allTransactions.size();
-        int start = page * size;
+        int start = Math.max(0, page * size);
         int end = Math.min(start + size, totalElements);
         
         // Get page content
