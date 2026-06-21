@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bd.dto.AccountDTO;
 import com.bd.dto.AdminAnalyticsDTO;
 import com.bd.dto.AdminTransactionDTO;
 import com.bd.dto.AdminUserDTO;
 import com.bd.dto.AuditLogDTO;
 import com.bd.dto.RewardHistoryDTO;
+import com.bd.dto.UserDetailDTO;
 import com.bd.service.AdminService;
 import com.bd.service.AnalyticsService;
 
@@ -42,6 +44,11 @@ public class AdminController {
         return admin.users();
     }
 
+    @GetMapping("/users/{id}")
+    public UserDetailDTO userDetails(@PathVariable Long id) {
+        return admin.getUserDetails(id);
+    }
+
     @PatchMapping("/users/{id}/status")
     public AdminUserDTO status(@PathVariable Long id, @RequestBody Map<String, String> body) {
         return admin.setUserStatus(id, body.getOrDefault("status", "ACTIVE"));
@@ -60,6 +67,11 @@ public class AdminController {
     @GetMapping("/rewards")
     public List<RewardHistoryDTO> rewards() {
         return admin.rewards();
+    }
+
+    @PutMapping("/accounts/{id}")
+    public AccountDTO updateAccount(@PathVariable String id, @RequestBody Map<String, Object> body) {
+        return admin.updateAccount(id, body);
     }
 
     @GetMapping("/audit-logs")

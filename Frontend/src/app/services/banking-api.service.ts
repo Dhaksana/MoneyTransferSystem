@@ -30,7 +30,9 @@ export interface AnalyticsSummary {
   statusDistribution: ChartPoint[];
 }
 export interface AppNotification { id: number; message: string; type: string; read: boolean; createdAt: string; }
-export interface AdminUser { id: number; username: string; fullName: string; email: string; role: string; status: string; accountId: string; }
+export interface AdminUser { id: number; username: string; fullName: string; email: string; role: string; status: string; accountId: string; displayName?: string; }
+export interface UserAccountDetail { id: string; accountNumber: string; accountType: string; holderName: string; balance: number; status: string; }
+export interface UserDetail { id: number; username: string; fullName: string; email: string; role: string; status: string; accountId: string; displayName?: string; accounts: UserAccountDetail[]; }
 export interface AdminTransaction { id: number; referenceNumber: string; fromAccount: string; toAccount: string; amount: number; status: string; createdAt: string; }
 export interface AuditLog { id: number; username: string; action: string; details: string; ipAddress: string; timestamp: string; }
 export interface AdminDashboard { totalUsers: number; activeUsers: number; totalTransactionVolume: number; successfulTransactions: number; failedTransactions: number; totalRewardsDistributed: number; }
@@ -174,8 +176,16 @@ export class BankingApiService {
     return this.http.patch<AdminUser>(`${this.baseUrl}/admin/users/${id}/status`, { status });
   }
 
-  updateAdminUser(id: number, data: { fullName?: string; email?: string; role?: string; status?: string }) {
+  getAdminUserDetails(id: number) {
+    return this.http.get<UserDetail>(`${this.baseUrl}/admin/users/${id}`);
+  }
+
+  updateAdminUser(id: number, data: { fullName?: string; email?: string; role?: string; status?: string; displayName?: string; accountId?: string }) {
     return this.http.put<AdminUser>(`${this.baseUrl}/admin/users/${id}`, data);
+  }
+
+  updateAdminAccount(id: string, data: { accountType?: string; holderName?: string; balance?: number; status?: string }) {
+    return this.http.put<UserAccountDetail>(`${this.baseUrl}/admin/accounts/${id}`, data);
   }
 
   getAdminTransactions() {

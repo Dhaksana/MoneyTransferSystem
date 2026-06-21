@@ -42,6 +42,9 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog, 
 
     long countByStatus(String status);
 
+    @Query("select count(t) from TransactionLog t where t.senderAccount.user.username = :username and t.status = :status")
+    long countByStatusAndSender(@Param("username") String username, @Param("status") String status);
+
     @Query("""
         select t from TransactionLog t
         where (t.senderAccount.id = :accountId or t.receiverAccount.id = :accountId)

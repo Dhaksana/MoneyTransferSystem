@@ -38,6 +38,9 @@ export class AppComponent {
 
   constructor() {
     console.log('[MTS] AppComponent constructed');
+    if (this.auth.role === 'ADMIN') {
+      this.collapsed = true;
+    }
   }
 
   get navItems() {
@@ -60,6 +63,6 @@ export class AppComponent {
 
   logout() {
     this.auth.logout();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/welcome']);
   }
 }

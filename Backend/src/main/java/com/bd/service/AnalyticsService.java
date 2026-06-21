@@ -45,8 +45,8 @@ public class AnalyticsService {
                 monthlyRewards,
                 List.of(new ChartPointDTO("Sent", sent), new ChartPointDTO("Received", received)),
                 List.of(
-                        new ChartPointDTO("Success", transactions.countByStatus("SUCCESS")),
-                        new ChartPointDTO("Failed", transactions.countByStatus("FAILED"))
+                        new ChartPointDTO("Success", transactions.countByStatusAndSender(username, "SUCCESS")),
+                        new ChartPointDTO("Failed", transactions.countByStatusAndSender(username, "FAILED"))
                 )
         );
     }
