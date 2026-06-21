@@ -543,3 +543,19 @@ ng test
 | BehaviorSubject for auth state | Reactive UI updates on login/logout |
 | BCrypt cost 10 | Industry-standard password hashing |
 | Material UI + Bootstrap | Rapid UI development + responsive grid |
+
+
+
+
+1. logout redirecting to login page, redirect to wlcome page, 
+2. save button should close the popup
+3. dont render failed received transactions and receipients end
+4. 2 transfer money buttons in dashboard of user not necessary
+5. render sender and receibers full name on review transaction
+6. after completing transaction route to dashboard or histroy page, whiever makes more logical sense
+7. analytics success fail should reflect for the transactions sent by user not received
+8. notification symbol in notificcation page being covered by text, check styling
+9. sidebar components, going towards down start from top
+10. dynamically adjust screen content based on sidebar collapsing or expanding
+11. remove the lifetime points division in rewards page, fix styling of current point i think colour is white right now
+12. remove details tht we dont have like bank and ifsc from beneficiary form
