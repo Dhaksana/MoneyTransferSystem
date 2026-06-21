@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,164 +15,178 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdminDashboard, AdminTransaction, AdminUser, AuditLog, BankingApiService } from '../services/banking-api.service';
 
 @Component({
-  selector: 'app-admin',
-  standalone: true,
-  imports: [
-    CommonModule, FormsModule, MatButtonModule, MatCardModule, MatIconModule,
-    MatTableModule, MatPaginatorModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatDatepickerModule, MatNativeDateModule, MatSnackBarModule
-  ],
-  template: `
+    selector: 'app-admin',
+    imports: [
+        CommonModule, FormsModule, MatButtonModule, MatCardModule, MatIconModule,
+        MatTableModule, MatPaginatorModule, MatFormFieldModule, MatInputModule,
+        MatSelectModule, MatDatepickerModule, MatNativeDateModule, MatSnackBarModule
+    ],
+    template: `
     <section class="admin-page">
       <div class="page-heading">
         <div><p class="eyebrow">Administrator</p><h1>Admin portal</h1></div>
       </div>
-
-      <div class="kpi-grid" *ngIf="dashboard">
-        <mat-card class="glass-card"><mat-card-content><span>Total users</span><strong>{{ dashboard.totalUsers }}</strong></mat-card-content></mat-card>
-        <mat-card class="glass-card"><mat-card-content><span>Active users</span><strong>{{ dashboard.activeUsers }}</strong></mat-card-content></mat-card>
-        <mat-card class="glass-card"><mat-card-content><span>Volume</span><strong>{{ dashboard.totalTransactionVolume | currency:'INR':'symbol':'1.0-0' }}</strong></mat-card-content></mat-card>
-        <mat-card class="glass-card"><mat-card-content><span>Rewards</span><strong>{{ dashboard.totalRewardsDistributed }}</strong></mat-card-content></mat-card>
-      </div>
-
+    
+      @if (dashboard) {
+        <div class="kpi-grid">
+          <mat-card class="glass-card"><mat-card-content><span>Total users</span><strong>{{ dashboard.totalUsers }}</strong></mat-card-content></mat-card>
+          <mat-card class="glass-card"><mat-card-content><span>Active users</span><strong>{{ dashboard.activeUsers }}</strong></mat-card-content></mat-card>
+          <mat-card class="glass-card"><mat-card-content><span>Volume</span><strong>{{ dashboard.totalTransactionVolume | currency:'INR':'symbol':'1.0-0' }}</strong></mat-card-content></mat-card>
+          <mat-card class="glass-card"><mat-card-content><span>Rewards</span><strong>{{ dashboard.totalRewardsDistributed }}</strong></mat-card-content></mat-card>
+        </div>
+      }
+    
       <div class="section-tabs">
         <button mat-stroked-button [class.active]="tab === 'users'" (click)="tab = 'users'"><mat-icon>people</mat-icon>Users</button>
         <button mat-stroked-button [class.active]="tab === 'transactions'" (click)="tab = 'transactions'"><mat-icon>receipt_long</mat-icon>Transactions</button>
         <button mat-stroked-button [class.active]="tab === 'audit'" (click)="tab = 'audit'"><mat-icon>history</mat-icon>Audit Log</button>
       </div>
-
-      <div *ngIf="tab === 'users'">
-        <mat-card class="glass-card">
-          <mat-card-header><mat-card-title>User management</mat-card-title></mat-card-header>
-          <mat-card-content>
-            <table mat-table [dataSource]="users" class="full-table">
-              <ng-container matColumnDef="username"><th mat-header-cell *matHeaderCellDef>User</th><td mat-cell *matCellDef="let u">{{ u.username }}</td></ng-container>
-              <ng-container matColumnDef="fullName"><th mat-header-cell *matHeaderCellDef>Name</th><td mat-cell *matCellDef="let u">{{ u.fullName }}</td></ng-container>
-              <ng-container matColumnDef="email"><th mat-header-cell *matHeaderCellDef>Email</th><td mat-cell *matCellDef="let u">{{ u.email }}</td></ng-container>
-              <ng-container matColumnDef="role"><th mat-header-cell *matHeaderCellDef>Role</th><td mat-cell *matCellDef="let u"><span class="role-badge">{{ u.role }}</span></td></ng-container>
-              <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let u"><span class="status-pill" [class.active]="u.status === 'ACTIVE'" [class.blocked]="u.status !== 'ACTIVE'">{{ u.status }}</span></td></ng-container>
-              <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef>Action</th>
-                <td mat-cell *matCellDef="let u">
-                  <button mat-stroked-button (click)="startEdit(u)"><mat-icon>edit</mat-icon>Edit</button>
-                  <button mat-stroked-button color="primary" (click)="toggleUser(u)">{{ u.status === 'ACTIVE' ? 'Block' : 'Unblock' }}</button>
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="userColumns"></tr><tr mat-row *matRowDef="let row; columns: userColumns;"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-
-        <div class="edit-overlay" *ngIf="editUser" (click)="cancelEdit()"></div>
-        <mat-card class="edit-card" *ngIf="editUser">
-          <mat-card-header>
-            <mat-card-title>Edit user — {{ editUser.username }}</mat-card-title>
-            <button mat-icon-button (click)="cancelEdit()"><mat-icon>close</mat-icon></button>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="edit-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Full name</mat-label>
-                <input matInput [(ngModel)]="editForm.fullName" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Email</mat-label>
-                <input matInput [(ngModel)]="editForm.email" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Role</mat-label>
-                <mat-select [(ngModel)]="editForm.role">
-                  <mat-option value="USER">USER</mat-option>
-                  <mat-option value="ADMIN">ADMIN</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Status</mat-label>
-                <mat-select [(ngModel)]="editForm.status">
-                  <mat-option value="ACTIVE">ACTIVE</mat-option>
-                  <mat-option value="BLOCKED">BLOCKED</mat-option>
-                  <mat-option value="INACTIVE">INACTIVE</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            <div class="edit-actions">
-              <button mat-flat-button color="primary" (click)="saveEdit()"><mat-icon>save</mat-icon>Save</button>
-              <button mat-stroked-button (click)="cancelEdit()">Cancel</button>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <div *ngIf="tab === 'transactions'">
-        <mat-card class="glass-card">
-          <mat-card-header><mat-card-title>Transaction monitoring</mat-card-title></mat-card-header>
-          <mat-card-content>
-            <table mat-table [dataSource]="transactions" class="full-table">
-              <ng-container matColumnDef="referenceNumber"><th mat-header-cell *matHeaderCellDef>Reference</th><td mat-cell *matCellDef="let t">{{ t.referenceNumber }}</td></ng-container>
-              <ng-container matColumnDef="fromAccount"><th mat-header-cell *matHeaderCellDef>From</th><td mat-cell *matCellDef="let t">{{ t.fromAccount }}</td></ng-container>
-              <ng-container matColumnDef="toAccount"><th mat-header-cell *matHeaderCellDef>To</th><td mat-cell *matCellDef="let t">{{ t.toAccount }}</td></ng-container>
-              <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef>Amount</th><td mat-cell *matCellDef="let t">{{ t.amount | currency:'INR':'symbol':'1.0-0' }}</td></ng-container>
-              <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let t"><span class="status-pill" [class.active]="t.status === 'SUCCESS'" [class.failed]="t.status === 'FAILED'">{{ t.status }}</span></td></ng-container>
-              <ng-container matColumnDef="createdAt"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let t">{{ t.createdAt | date:'medium' }}</td></ng-container>
-              <tr mat-header-row *matHeaderRowDef="transactionColumns"></tr><tr mat-row *matRowDef="let row; columns: transactionColumns;"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <div *ngIf="tab === 'audit'">
-        <mat-card class="glass-card">
-          <mat-card-header><mat-card-title>Audit trail</mat-card-title></mat-card-header>
-          <mat-card-content>
-            <div class="audit-filters">
-              <mat-form-field appearance="outline">
-                <mat-label>Search action</mat-label>
-                <input matInput [(ngModel)]="auditFilter.action" placeholder="e.g. LOGIN, TRANSFER" />
-                <mat-icon matSuffix>search</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Username</mat-label>
-                <input matInput [(ngModel)]="auditFilter.username" placeholder="Filter by user" />
-                <mat-icon matSuffix>person</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>From date</mat-label>
-                <input matInput [matDatepicker]="fromPicker" [(ngModel)]="auditFilter.fromDate" />
-                <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
-                <mat-datepicker #fromPicker></mat-datepicker>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>To date</mat-label>
-                <input matInput [matDatepicker]="toPicker" [(ngModel)]="auditFilter.toDate" />
-                <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
-                <mat-datepicker #toPicker></mat-datepicker>
-              </mat-form-field>
-              <div class="filter-actions">
-                <button mat-flat-button color="primary" (click)="searchAudit()"><mat-icon>filter_alt</mat-icon>Search</button>
-                <button mat-stroked-button (click)="resetAuditFilter()"><mat-icon>clear</mat-icon>Reset</button>
-                <button mat-stroked-button (click)="exportAudit()"><mat-icon>download</mat-icon>Export CSV</button>
+    
+      @if (tab === 'users') {
+        <div>
+          <mat-card class="glass-card">
+            <mat-card-header><mat-card-title>User management</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <table mat-table [dataSource]="users" class="full-table">
+                <ng-container matColumnDef="username"><th mat-header-cell *matHeaderCellDef>User</th><td mat-cell *matCellDef="let u">{{ u.username }}</td></ng-container>
+                <ng-container matColumnDef="fullName"><th mat-header-cell *matHeaderCellDef>Name</th><td mat-cell *matCellDef="let u">{{ u.fullName }}</td></ng-container>
+                <ng-container matColumnDef="email"><th mat-header-cell *matHeaderCellDef>Email</th><td mat-cell *matCellDef="let u">{{ u.email }}</td></ng-container>
+                <ng-container matColumnDef="role"><th mat-header-cell *matHeaderCellDef>Role</th><td mat-cell *matCellDef="let u"><span class="role-badge">{{ u.role }}</span></td></ng-container>
+                <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let u"><span class="status-pill" [class.active]="u.status === 'ACTIVE'" [class.blocked]="u.status !== 'ACTIVE'">{{ u.status }}</span></td></ng-container>
+                <ng-container matColumnDef="action">
+                  <th mat-header-cell *matHeaderCellDef>Action</th>
+                  <td mat-cell *matCellDef="let u">
+                    <button mat-stroked-button (click)="startEdit(u)"><mat-icon>edit</mat-icon>Edit</button>
+                    <button mat-stroked-button color="primary" (click)="toggleUser(u)">{{ u.status === 'ACTIVE' ? 'Block' : 'Unblock' }}</button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="userColumns"></tr><tr mat-row *matRowDef="let row; columns: userColumns;"></tr>
+              </table>
+            </mat-card-content>
+          </mat-card>
+          @if (editUser) {
+            <div class="edit-overlay" (click)="cancelEdit()"></div>
+          }
+          @if (editUser) {
+            <mat-card class="edit-card">
+              <mat-card-header>
+                <mat-card-title>Edit user — {{ editUser.username }}</mat-card-title>
+                <button mat-icon-button (click)="cancelEdit()"><mat-icon>close</mat-icon></button>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="edit-grid">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Full name</mat-label>
+                    <input matInput [(ngModel)]="editForm.fullName" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput [(ngModel)]="editForm.email" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Role</mat-label>
+                    <mat-select [(ngModel)]="editForm.role">
+                      <mat-option value="USER">USER</mat-option>
+                      <mat-option value="ADMIN">ADMIN</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Status</mat-label>
+                    <mat-select [(ngModel)]="editForm.status">
+                      <mat-option value="ACTIVE">ACTIVE</mat-option>
+                      <mat-option value="BLOCKED">BLOCKED</mat-option>
+                      <mat-option value="INACTIVE">INACTIVE</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="edit-actions">
+                  <button mat-flat-button color="primary" (click)="saveEdit()"><mat-icon>save</mat-icon>Save</button>
+                  <button mat-stroked-button (click)="cancelEdit()">Cancel</button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      }
+    
+      @if (tab === 'transactions') {
+        <div>
+          <mat-card class="glass-card">
+            <mat-card-header><mat-card-title>Transaction monitoring</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <table mat-table [dataSource]="transactions" class="full-table">
+                <ng-container matColumnDef="referenceNumber"><th mat-header-cell *matHeaderCellDef>Reference</th><td mat-cell *matCellDef="let t">{{ t.referenceNumber }}</td></ng-container>
+                <ng-container matColumnDef="fromAccount"><th mat-header-cell *matHeaderCellDef>From</th><td mat-cell *matCellDef="let t">{{ t.fromAccount }}</td></ng-container>
+                <ng-container matColumnDef="toAccount"><th mat-header-cell *matHeaderCellDef>To</th><td mat-cell *matCellDef="let t">{{ t.toAccount }}</td></ng-container>
+                <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef>Amount</th><td mat-cell *matCellDef="let t">{{ t.amount | currency:'INR':'symbol':'1.0-0' }}</td></ng-container>
+                <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let t"><span class="status-pill" [class.active]="t.status === 'SUCCESS'" [class.failed]="t.status === 'FAILED'">{{ t.status }}</span></td></ng-container>
+                <ng-container matColumnDef="createdAt"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let t">{{ t.createdAt | date:'medium' }}</td></ng-container>
+                <tr mat-header-row *matHeaderRowDef="transactionColumns"></tr><tr mat-row *matRowDef="let row; columns: transactionColumns;"></tr>
+              </table>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
+    
+      @if (tab === 'audit') {
+        <div>
+          <mat-card class="glass-card">
+            <mat-card-header><mat-card-title>Audit trail</mat-card-title></mat-card-header>
+            <mat-card-content>
+              <div class="audit-filters">
+                <mat-form-field appearance="outline">
+                  <mat-label>Search action</mat-label>
+                  <input matInput [(ngModel)]="auditFilter.action" placeholder="e.g. LOGIN, TRANSFER" />
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Username</mat-label>
+                  <input matInput [(ngModel)]="auditFilter.username" placeholder="Filter by user" />
+                  <mat-icon matSuffix>person</mat-icon>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>From date</mat-label>
+                  <input matInput [matDatepicker]="fromPicker" [(ngModel)]="auditFilter.fromDate" />
+                  <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #fromPicker></mat-datepicker>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>To date</mat-label>
+                  <input matInput [matDatepicker]="toPicker" [(ngModel)]="auditFilter.toDate" />
+                  <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #toPicker></mat-datepicker>
+                </mat-form-field>
+                <div class="filter-actions">
+                  <button mat-flat-button color="primary" (click)="searchAudit()"><mat-icon>filter_alt</mat-icon>Search</button>
+                  <button mat-stroked-button (click)="resetAuditFilter()"><mat-icon>clear</mat-icon>Reset</button>
+                  <button mat-stroked-button (click)="exportAudit()"><mat-icon>download</mat-icon>Export CSV</button>
+                </div>
               </div>
-            </div>
-
-            <table mat-table [dataSource]="auditLogs" class="full-table">
-              <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let log">{{ log.id }}</td></ng-container>
-              <ng-container matColumnDef="username"><th mat-header-cell *matHeaderCellDef>User</th><td mat-cell *matCellDef="let log">{{ log.username || '-' }}</td></ng-container>
-              <ng-container matColumnDef="action"><th mat-header-cell *matHeaderCellDef>Action</th><td mat-cell *matCellDef="let log"><span class="action-badge" [class]="actionClass(log.action)">{{ log.action }}</span></td></ng-container>
-              <ng-container matColumnDef="details"><th mat-header-cell *matHeaderCellDef>Details</th><td mat-cell *matCellDef="let log" class="details-cell">{{ log.details }}</td></ng-container>
-              <ng-container matColumnDef="ipAddress"><th mat-header-cell *matHeaderCellDef>IP</th><td mat-cell *matCellDef="let log">{{ log.ipAddress || '-' }}</td></ng-container>
-              <ng-container matColumnDef="timestamp"><th mat-header-cell *matHeaderCellDef>Timestamp</th><td mat-cell *matCellDef="let log">{{ log.timestamp | date:'medium' }}</td></ng-container>
-              <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let log"><button mat-icon-button color="warn" (click)="deleteAuditEntry(log)"><mat-icon>delete</mat-icon></button></td></ng-container>
-              <tr mat-header-row *matHeaderRowDef="auditColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: auditColumns;"></tr>
-            </table>
-            <div *ngIf="auditTotal === 0" class="empty-state">No audit logs found.</div>
-            <mat-paginator *ngIf="auditTotal > 0" [length]="auditTotal" [pageSize]="auditPageSize" [pageIndex]="auditPage" (page)="onAuditPage($event)" [pageSizeOptions]="[10,20,50]"></mat-paginator>
-          </mat-card-content>
-        </mat-card>
-      </div>
+              <table mat-table [dataSource]="auditLogs" class="full-table">
+                <ng-container matColumnDef="id"><th mat-header-cell *matHeaderCellDef>#</th><td mat-cell *matCellDef="let log">{{ log.id }}</td></ng-container>
+                <ng-container matColumnDef="username"><th mat-header-cell *matHeaderCellDef>User</th><td mat-cell *matCellDef="let log">{{ log.username || '-' }}</td></ng-container>
+                <ng-container matColumnDef="action"><th mat-header-cell *matHeaderCellDef>Action</th><td mat-cell *matCellDef="let log"><span class="action-badge" [class]="actionClass(log.action)">{{ log.action }}</span></td></ng-container>
+                <ng-container matColumnDef="details"><th mat-header-cell *matHeaderCellDef>Details</th><td mat-cell *matCellDef="let log" class="details-cell">{{ log.details }}</td></ng-container>
+                <ng-container matColumnDef="ipAddress"><th mat-header-cell *matHeaderCellDef>IP</th><td mat-cell *matCellDef="let log">{{ log.ipAddress || '-' }}</td></ng-container>
+                <ng-container matColumnDef="timestamp"><th mat-header-cell *matHeaderCellDef>Timestamp</th><td mat-cell *matCellDef="let log">{{ log.timestamp | date:'medium' }}</td></ng-container>
+                <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let log"><button mat-icon-button color="warn" (click)="deleteAuditEntry(log)"><mat-icon>delete</mat-icon></button></td></ng-container>
+                <tr mat-header-row *matHeaderRowDef="auditColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: auditColumns;"></tr>
+              </table>
+              @if (auditTotal === 0) {
+                <div class="empty-state">No audit logs found.</div>
+              }
+              @if (auditTotal > 0) {
+                <mat-paginator [length]="auditTotal" [pageSize]="auditPageSize" [pageIndex]="auditPage" (page)="onAuditPage($event)" [pageSizeOptions]="[10,20,50]"></mat-paginator>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
     </section>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .admin-page { display:grid; gap:20px; }
     .page-heading { display:flex; justify-content:space-between; align-items:center; }
     .eyebrow { margin:0 0 6px; color:#0f766e; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }

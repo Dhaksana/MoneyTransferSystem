@@ -1,6 +1,6 @@
 
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
@@ -13,11 +13,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-signup',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule],
-  templateUrl: './signup.component.html',
-  styleUrls: ['./signup.component.css']
+    selector: 'app-signup',
+    imports: [FormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule],
+    templateUrl: './signup.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrls: ['./signup.component.css']
 })
 export class SignupComponent {
   username = '';

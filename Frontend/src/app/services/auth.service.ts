@@ -26,14 +26,20 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     @Inject('API_BASE_URL') private baseUrl: string
-  ) {}
+  ) {
+    console.log('[MTS] AuthService constructed, hasSession:', this.hasSession(), 'isLoggedIn:', this._isLoggedIn.value);
+  }
 
   login(username: string, password: string) {
+    console.log('[MTS] AuthService.login() called, username:', username, 'baseUrl:', this.baseUrl);
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const url = `${this.baseUrl}/auth/login`;
+    console.log('[MTS] POST', url);
     return this.http
-      .post<LoginResponse>(`${this.baseUrl}/auth/login`, { username, password }, { headers, observe: 'response' })
+      .post<LoginResponse>(url, { username, password }, { headers, observe: 'response' })
       .pipe(
         map((resp) => {
+          console.log('[MTS] login HTTP response received, status:', resp.status, 'body:', resp.body);
           const data = resp.body || {};
           if (!data.authenticated) throw new Error('Invalid credentials');
 
@@ -50,6 +56,7 @@ export class AuthService {
           return true;
         }),
         catchError((err: HttpErrorResponse) => {
+          console.error('[MTS] login HTTP error:', err.status, err.message, err.error);
           const msg = err.error?.message || err.message || 'Login failed';
           return throwError(() => new Error(msg));
         })
@@ -57,6 +64,7 @@ export class AuthService {
   }
 
   register(username: string, password: string, holderName: string) {
+    console.log('[MTS] AuthService.register() called, username:', username);
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     const params = new HttpParams()
       .set('username', username)
@@ -67,6 +75,7 @@ export class AuthService {
       .post<LoginResponse>(`${this.baseUrl}/auth/register`, null, { params, headers, observe: 'response' })
       .pipe(
         map((resp) => {
+          console.log('[MTS] register HTTP response received, status:', resp.status);
           const data = resp.body || {};
           if (!data.authenticated) throw new Error('Registration failed');
 
@@ -82,6 +91,7 @@ export class AuthService {
           return true;
         }),
         catchError((err: HttpErrorResponse) => {
+          console.error('[MTS] register HTTP error:', err.status, err.message, err.error);
           const msg = err.error?.message || err.message || 'Registration failed';
           return throwError(() => new Error(msg));
         })

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -17,22 +17,21 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
 
 @Component({
-  selector: 'app-transaction-history',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    MatButtonModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatPaginatorModule,
-    MatSelectModule,
-    MatSortModule,
-    MatTableModule
-  ],
-  template: `
+    selector: 'app-transaction-history',
+    imports: [
+        CommonModule,
+        RouterLink,
+        MatButtonModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatPaginatorModule,
+        MatSelectModule,
+        MatSortModule,
+        MatTableModule
+    ],
+    template: `
     <section class="history-page">
       <div class="page-heading">
         <div>
@@ -42,7 +41,7 @@ type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
         </div>
         <a mat-flat-button color="primary" routerLink="/transfer"><mat-icon>swap_horiz</mat-icon>New transfer</a>
       </div>
-
+    
       <mat-card class="glass-card">
         <mat-card-content>
           <div class="table-tools">
@@ -51,7 +50,7 @@ type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
               <input matInput (keyup)="applySearch($event)" placeholder="Account, status, amount" />
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
-
+    
             <mat-form-field appearance="outline">
               <mat-label>Filter</mat-label>
               <mat-select [(value)]="selected" (selectionChange)="applyFilter()">
@@ -63,69 +62,70 @@ type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
               </mat-select>
             </mat-form-field>
           </div>
-
-          <div *ngIf="loading" class="empty-state">Loading transactions...</div>
-          <div *ngIf="errorMsg" class="error-state">{{ errorMsg }}</div>
-
-          <div class="table-wrap" *ngIf="!loading">
-            <table mat-table [dataSource]="dataSource" matSort>
-              <ng-container matColumnDef="transactionId">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th>
-                <td mat-cell *matCellDef="let txn">#{{ txn.transactionId || '-' }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="fromAccountId">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>From</th>
-                <td mat-cell *matCellDef="let txn">{{ txn.fromAccountId }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="toAccountId">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>To</th>
-                <td mat-cell *matCellDef="let txn">{{ txn.toAccountId }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="amount">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-                <td mat-cell *matCellDef="let txn" class="amount">{{ txn.amount | currency:'INR':'symbol':'1.0-2' }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-                <td mat-cell *matCellDef="let txn">
-                  <span class="status-pill" [class.failed]="txn.status === 'FAILED'" [class.pending]="txn.status === 'PENDING'">{{ txn.status }}</span>
-                </td>
-              </ng-container>
-
-              <ng-container matColumnDef="failureReason">
-                <th mat-header-cell *matHeaderCellDef>Notes</th>
-                <td mat-cell *matCellDef="let txn">{{ txn.failureReason || '-' }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="createdOn">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                <td mat-cell *matCellDef="let txn">{{ txn.createdOn | date:'medium' }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="receipt">
-                <th mat-header-cell *matHeaderCellDef>Receipt</th>
-                <td mat-cell *matCellDef="let txn">
-                  <button mat-icon-button color="primary" (click)="downloadReceipt(txn)" [disabled]="!txn.transactionId">
-                    <mat-icon>picture_as_pdf</mat-icon>
-                  </button>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            </table>
-            <div *ngIf="!dataSource.filteredData.length" class="empty-state">No matching transactions found.</div>
-            <mat-paginator [pageSize]="8" [pageSizeOptions]="[5, 8, 15]" showFirstLastButtons></mat-paginator>
-          </div>
+    
+          @if (loading) {
+            <div class="empty-state">Loading transactions...</div>
+          }
+          @if (errorMsg) {
+            <div class="error-state">{{ errorMsg }}</div>
+          }
+    
+          @if (!loading) {
+            <div class="table-wrap">
+              <table mat-table [dataSource]="dataSource" matSort>
+                <ng-container matColumnDef="transactionId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th>
+                  <td mat-cell *matCellDef="let txn">#{{ txn.transactionId || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="fromAccountId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>From</th>
+                  <td mat-cell *matCellDef="let txn">{{ txn.fromAccountId }}</td>
+                </ng-container>
+                <ng-container matColumnDef="toAccountId">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>To</th>
+                  <td mat-cell *matCellDef="let txn">{{ txn.toAccountId }}</td>
+                </ng-container>
+                <ng-container matColumnDef="amount">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+                  <td mat-cell *matCellDef="let txn" class="amount">{{ txn.amount | currency:'INR':'symbol':'1.0-2' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                  <td mat-cell *matCellDef="let txn">
+                    <span class="status-pill" [class.failed]="txn.status === 'FAILED'" [class.pending]="txn.status === 'PENDING'">{{ txn.status }}</span>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="failureReason">
+                  <th mat-header-cell *matHeaderCellDef>Notes</th>
+                  <td mat-cell *matCellDef="let txn">{{ txn.failureReason || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="createdOn">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                  <td mat-cell *matCellDef="let txn">{{ txn.createdOn | date:'medium' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="receipt">
+                  <th mat-header-cell *matHeaderCellDef>Receipt</th>
+                  <td mat-cell *matCellDef="let txn">
+                    <button mat-icon-button color="primary" (click)="downloadReceipt(txn)" [disabled]="!txn.transactionId">
+                      <mat-icon>picture_as_pdf</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+              @if (!dataSource.filteredData.length) {
+                <div class="empty-state">No matching transactions found.</div>
+              }
+              <mat-paginator [pageSize]="8" [pageSizeOptions]="[5, 8, 15]" showFirstLastButtons></mat-paginator>
+            </div>
+          }
         </mat-card-content>
       </mat-card>
     </section>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .history-page { display: grid; gap: 22px; }
     .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
     .page-heading span { color: #71717a; }
@@ -143,7 +143,7 @@ type Filter = 'all' | 'received' | 'sent' | 'success' | 'failure';
     .empty-state, .error-state { padding: 18px; color: #71717a; }
     .error-state { color: #dc2626; }
     @media (max-width: 760px) { .table-tools { grid-template-columns: 1fr; } .page-heading { align-items: flex-start; flex-direction: column; } }
-  `],
+  `]
 })
 export class TransactionHistoryComponent implements OnInit, AfterViewInit {
   constructor(

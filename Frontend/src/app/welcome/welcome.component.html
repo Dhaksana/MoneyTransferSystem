@@ -36,11 +36,13 @@
     <h2>Everything you need</h2>
     <p class="section-sub">Modern banking tools designed for individuals and administrators.</p>
     <div class="features-grid">
-      <div class="feature-card" *ngFor="let f of features">
-        <mat-icon>{{ f.icon }}</mat-icon>
-        <h3>{{ f.title }}</h3>
-        <p>{{ f.desc }}</p>
-      </div>
+      @for (f of features; track f) {
+        <div class="feature-card">
+          <mat-icon>{{ f.icon }}</mat-icon>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.desc }}</p>
+        </div>
+      }
     </div>
   </div>
 
@@ -69,63 +71,66 @@
   </div>
 
   <div class="drawer-body">
-    <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" *ngIf="authMode === 'login'">
-      <h2>Welcome back</h2>
-      <p class="form-sub">Sign in to your account</p>
+    @if (authMode === 'login') {
+      <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+        <h2>Welcome back</h2>
+        <p class="form-sub">Sign in to your account</p>
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput name="u" [(ngModel)]="loginUsername" required />
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error>Required</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" name="p" [(ngModel)]="loginPassword" required />
+          <mat-icon matSuffix>lock</mat-icon>
+          <mat-error>Required</mat-error>
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="loginForm.invalid || loginLoading">
+          @if (loginLoading) {
+            <mat-spinner diameter="18"></mat-spinner>
+          }
+          {{ loginLoading ? 'Signing in…' : 'Sign In' }}
+        </button>
+        @if (loginError) {
+          <p class="form-error">{{ loginError }}</p>
+        }
+      </form>
+    }
 
-      <mat-form-field appearance="outline">
-        <mat-label>Username</mat-label>
-        <input matInput name="u" [(ngModel)]="loginUsername" required />
-        <mat-icon matSuffix>person</mat-icon>
-        <mat-error>Required</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Password</mat-label>
-        <input matInput type="password" name="p" [(ngModel)]="loginPassword" required />
-        <mat-icon matSuffix>lock</mat-icon>
-        <mat-error>Required</mat-error>
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="loginForm.invalid || loginLoading">
-        <mat-spinner *ngIf="loginLoading" diameter="18"></mat-spinner>
-        {{ loginLoading ? 'Signing in…' : 'Sign In' }}
-      </button>
-
-      <p *ngIf="loginError" class="form-error">{{ loginError }}</p>
-    </form>
-
-    <form #signupForm="ngForm" (ngSubmit)="onSignup(signupForm)" *ngIf="authMode === 'signup'">
-      <h2>Create account</h2>
-      <p class="form-sub">Open your digital banking profile</p>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Username</mat-label>
-        <input matInput name="su" [(ngModel)]="signupUsername" required />
-        <mat-icon matSuffix>alternate_email</mat-icon>
-        <mat-error>Required</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Full name</mat-label>
-        <input matInput name="sh" [(ngModel)]="signupHolderName" required />
-        <mat-icon matSuffix>badge</mat-icon>
-        <mat-error>Required</mat-error>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Password</mat-label>
-        <input matInput type="password" name="sp" [(ngModel)]="signupPassword" required />
-        <mat-icon matSuffix>lock</mat-icon>
-        <mat-error>Required</mat-error>
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="signupForm.invalid || signupLoading">
-        <mat-spinner *ngIf="signupLoading" diameter="18"></mat-spinner>
-        {{ signupLoading ? 'Creating…' : 'Create Account' }}
-      </button>
-
-      <p *ngIf="signupError" class="form-error">{{ signupError }}</p>
-    </form>
+    @if (authMode === 'signup') {
+      <form #signupForm="ngForm" (ngSubmit)="onSignup(signupForm)">
+        <h2>Create account</h2>
+        <p class="form-sub">Open your digital banking profile</p>
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput name="su" [(ngModel)]="signupUsername" required />
+          <mat-icon matSuffix>alternate_email</mat-icon>
+          <mat-error>Required</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Full name</mat-label>
+          <input matInput name="sh" [(ngModel)]="signupHolderName" required />
+          <mat-icon matSuffix>badge</mat-icon>
+          <mat-error>Required</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" name="sp" [(ngModel)]="signupPassword" required />
+          <mat-icon matSuffix>lock</mat-icon>
+          <mat-error>Required</mat-error>
+        </mat-form-field>
+        <button mat-flat-button color="primary" type="submit" class="drawer-submit" [disabled]="signupForm.invalid || signupLoading">
+          @if (signupLoading) {
+            <mat-spinner diameter="18"></mat-spinner>
+          }
+          {{ signupLoading ? 'Creating…' : 'Create Account' }}
+        </button>
+        @if (signupError) {
+          <p class="form-error">{{ signupError }}</p>
+        }
+      </form>
+    }
   </div>
 </aside>

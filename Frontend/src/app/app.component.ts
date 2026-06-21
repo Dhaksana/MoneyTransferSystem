@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
@@ -12,29 +12,33 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    MatButtonModule,
-    MatBadgeModule,
-    MatIconModule,
-    MatMenuModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatTooltipModule
-  ],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    imports: [
+        CommonModule,
+        RouterOutlet,
+        RouterLink,
+        RouterLinkActive,
+        MatButtonModule,
+        MatBadgeModule,
+        MatIconModule,
+        MatMenuModule,
+        MatSidenavModule,
+        MatToolbarModule,
+        MatTooltipModule
+    ],
+    templateUrl: './app.component.html',
+    changeDetection: ChangeDetectionStrategy.Default,
+    styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   auth = inject(AuthService);
   notifications = inject(NotificationService);
   router = inject(Router);
   collapsed = false;
+
+  constructor() {
+    console.log('[MTS] AppComponent constructed');
+  }
 
   get navItems() {
     const isAdmin = this.auth.role === 'ADMIN';

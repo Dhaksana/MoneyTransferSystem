@@ -14,12 +14,13 @@
     <mat-card class="glass-card balance-card">
       <mat-card-content>
         <span class="card-label">Current balance</span>
-        <strong *ngIf="balance !== null; else balanceLoading">
-          {{ balance | currency:'INR':'symbol':'1.0-2' }}
-        </strong>
-        <ng-template #balanceLoading>
+        @if (balance !== null) {
+          <strong>
+            {{ balance | currency:'INR':'symbol':'1.0-2' }}
+          </strong>
+        } @else {
           <mat-spinner diameter="30"></mat-spinner>
-        </ng-template>
+        }
         <p>Available across your primary savings account.</p>
       </mat-card-content>
     </mat-card>
@@ -54,21 +55,31 @@
       <mat-card-title>Recent transactions</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div *ngIf="loadingHistory" class="empty-state">Loading transactions...</div>
-      <div *ngIf="!loadingHistory && !recentTransactions.length" class="empty-state">No recent transactions yet.</div>
-      <div class="txn-list" *ngIf="!loadingHistory && recentTransactions.length">
-        <div class="txn-row" *ngFor="let txn of recentTransactions">
-          <mat-icon>{{ txn.fromAccountId === acc ? 'north_east' : 'south_west' }}</mat-icon>
-          <div>
-            <strong>{{ txn.fromAccountId === acc ? 'Sent' : 'Received' }}</strong>
-            <span>{{ txn.createdOn | date:'medium' }}</span>
-          </div>
-          <span class="txn-amount">{{ txn.amount | currency:'INR':'symbol':'1.0-2' }}</span>
-          <span class="status-pill" [class.failed]="txn.status === 'FAILED'">{{ txn.status }}</span>
+      @if (loadingHistory) {
+        <div class="empty-state">Loading transactions...</div>
+      }
+      @if (!loadingHistory && !recentTransactions.length) {
+        <div class="empty-state">No recent transactions yet.</div>
+      }
+      @if (!loadingHistory && recentTransactions.length) {
+        <div class="txn-list">
+          @for (txn of recentTransactions; track txn) {
+            <div class="txn-row">
+              <mat-icon>{{ txn.fromAccountId === acc ? 'north_east' : 'south_west' }}</mat-icon>
+              <div>
+                <strong>{{ txn.fromAccountId === acc ? 'Sent' : 'Received' }}</strong>
+                <span>{{ txn.createdOn | date:'medium' }}</span>
+              </div>
+              <span class="txn-amount">{{ txn.amount | currency:'INR':'symbol':'1.0-2' }}</span>
+              <span class="status-pill" [class.failed]="txn.status === 'FAILED'">{{ txn.status }}</span>
+            </div>
+          }
         </div>
-      </div>
+      }
     </mat-card-content>
   </mat-card>
 
-  <div *ngIf="errorMsg" class="alert-text">{{ errorMsg }}</div>
+  @if (errorMsg) {
+    <div class="alert-text">{{ errorMsg }}</div>
+  }
 </section>

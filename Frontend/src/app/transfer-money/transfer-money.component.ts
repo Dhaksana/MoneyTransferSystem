@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,10 +20,9 @@ interface ConfirmTransferData {
 }
 
 @Component({
-  selector: 'app-confirm-transfer-dialog',
-  standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule],
-  template: `
+    selector: 'app-confirm-transfer-dialog',
+    imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule],
+    template: `
     <h2 mat-dialog-title>Confirm transfer</h2>
     <mat-dialog-content class="confirm-body">
       <mat-icon>verified</mat-icon>
@@ -34,29 +33,29 @@ interface ConfirmTransferData {
       <button mat-flat-button color="primary" [mat-dialog-close]="true">Confirm</button>
     </mat-dialog-actions>
   `,
-  styles: [`.confirm-body { display: flex; align-items: center; gap: 16px; color: #52525b; } mat-icon { color: #0d9488; }`]
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`.confirm-body { display: flex; align-items: center; gap: 16px; color: #52525b; } mat-icon { color: #0d9488; }`]
 })
 export class ConfirmTransferDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: ConfirmTransferData) {}
 }
 
 @Component({
-  selector: 'app-transfer-money',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink,
-    MatButtonModule,
-    MatCardModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule
-  ],
-  template: `
+    selector: 'app-transfer-money',
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterLink,
+        MatButtonModule,
+        MatCardModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule
+    ],
+    template: `
     <section class="transfer-page">
       <div class="page-heading">
         <div>
@@ -65,7 +64,7 @@ export class ConfirmTransferDialogComponent {
         </div>
         <a mat-stroked-button routerLink="/transactions"><mat-icon>receipt_long</mat-icon>History</a>
       </div>
-
+    
       <mat-card class="glass-card transfer-card">
         <mat-card-content>
           <form #f="ngForm" (ngSubmit)="submit(f)" class="transfer-form">
@@ -74,43 +73,50 @@ export class ConfirmTransferDialogComponent {
               <input matInput name="fromAccountNumber" [(ngModel)]="fromAccountNumber" required />
               <mat-icon matSuffix>account_balance</mat-icon>
             </mat-form-field>
-
+    
             <mat-form-field appearance="outline">
               <mat-label>Recipient account number</mat-label>
               <input matInput name="toAccountNumber" [(ngModel)]="toAccountNumber" required (blur)="previewRecipient()" />
               <mat-icon matSuffix>person_search</mat-icon>
             </mat-form-field>
-
+    
             <div class="recipient-preview" [class.valid]="recipientExists" [class.invalid]="recipientExists === false">
               <mat-icon>{{ recipientExists ? 'check_circle' : recipientExists === false ? 'error' : 'manage_search' }}</mat-icon>
               <span>{{ recipientPreview }}</span>
             </div>
-
+    
             <mat-form-field appearance="outline">
               <mat-label>Amount</mat-label>
               <input matInput type="number" name="amount" [(ngModel)]="amount" min="0.01" step="0.01" required />
               <span matTextPrefix>₹&nbsp;</span>
             </mat-form-field>
-
+    
             <button mat-flat-button color="primary" type="submit" [disabled]="f.invalid || loading">
-              <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
-              <mat-icon *ngIf="!loading">send</mat-icon>
+              @if (loading) {
+                <mat-spinner diameter="18"></mat-spinner>
+              }
+              @if (!loading) {
+                <mat-icon>send</mat-icon>
+              }
               {{ loading ? 'Processing' : 'Review transfer' }}
             </button>
           </form>
         </mat-card-content>
       </mat-card>
-
-      <mat-card class="glass-card result-card" *ngIf="lastResponse">
-        <mat-icon [class.success]="lastResponse.status === 'SUCCESS'">{{ lastResponse.status === 'SUCCESS' ? 'task_alt' : 'cancel' }}</mat-icon>
-        <div>
-          <strong>{{ lastResponse.status }}</strong>
-          <span>{{ lastResponse.message }}</span>
-        </div>
-      </mat-card>
+    
+      @if (lastResponse) {
+        <mat-card class="glass-card result-card">
+          <mat-icon [class.success]="lastResponse.status === 'SUCCESS'">{{ lastResponse.status === 'SUCCESS' ? 'task_alt' : 'cancel' }}</mat-icon>
+          <div>
+            <strong>{{ lastResponse.status }}</strong>
+            <span>{{ lastResponse.message }}</span>
+          </div>
+        </mat-card>
+      }
     </section>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .transfer-page { display: grid; gap: 22px; max-width: 900px; }
     .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
     .eyebrow { margin: 0 0 6px; color: #0d9488; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
@@ -129,7 +135,7 @@ export class ConfirmTransferDialogComponent {
     .result-card div { display: grid; }
     .result-card span { color: #71717a; }
     @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  `],
+  `]
 })
 export class TransferMoneyComponent {
   constructor(

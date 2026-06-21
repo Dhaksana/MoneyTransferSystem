@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -14,10 +14,9 @@ import { BankingApiService, Beneficiary } from '../services/banking-api.service'
 import { AuthService } from '../services/auth.service';
 
 @Component({
-  selector: 'app-beneficiary-dialog',
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule],
-  template: `
+    selector: 'app-beneficiary-dialog',
+    imports: [FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatIconModule],
+    template: `
     <h2 mat-dialog-title>{{ model.id ? 'Edit beneficiary' : 'Add beneficiary' }}</h2>
     <mat-dialog-content class="form-grid">
       <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="model.beneficiaryName" /></mat-form-field>
@@ -31,7 +30,8 @@ import { AuthService } from '../services/auth.service';
       <button mat-flat-button color="primary" [mat-dialog-close]="model">Save</button>
     </mat-dialog-actions>
   `,
-  styles: [`.form-grid { display: grid; gap: 12px; min-width: min(520px, 82vw); }`]
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`.form-grid { display: grid; gap: 12px; min-width: min(520px, 82vw); }`]
 })
 export class BeneficiaryDialogComponent {
   model: Beneficiary;
@@ -41,36 +41,38 @@ export class BeneficiaryDialogComponent {
 }
 
 @Component({
-  selector: 'app-beneficiaries',
-  standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSnackBarModule, MatTableModule],
-  template: `
+    selector: 'app-beneficiaries',
+    imports: [RouterLink, MatButtonModule, MatCardModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSnackBarModule, MatTableModule],
+    template: `
     <section class="beneficiaries-page">
       <div class="page-heading">
         <div><p class="eyebrow">Recipients</p><h1>Beneficiaries</h1></div>
         <button mat-flat-button color="primary" (click)="openDialog()"><mat-icon>person_add</mat-icon>Add beneficiary</button>
       </div>
-
+    
       <mat-form-field appearance="outline" class="search"><mat-label>Search beneficiaries</mat-label><input matInput (input)="search = $any($event.target).value" /><mat-icon matSuffix>search</mat-icon></mat-form-field>
-
+    
       <div class="card-grid">
-        <mat-card class="glass-card beneficiary-card" *ngFor="let b of filtered()">
-          <mat-card-content>
-            <button mat-icon-button class="favorite" (click)="toggleFavorite(b)"><mat-icon>{{ b.favorite ? 'star' : 'star_border' }}</mat-icon></button>
-            <h3>{{ b.beneficiaryName }}</h3>
-            <p>{{ b.beneficiaryAccountNumber }}</p>
-            <span>{{ b.bankName || 'Bank' }} {{ b.ifsc ? '- ' + b.ifsc : '' }}</span>
-            <div class="actions">
-              <a mat-button color="primary" routerLink="/transfer" [queryParams]="{ toAccountNumber: b.beneficiaryAccountNumber }"><mat-icon>send</mat-icon>Transfer</a>
-              <button mat-button (click)="openDialog(b)"><mat-icon>edit</mat-icon>Edit</button>
-              <button mat-button color="warn" (click)="remove(b)"><mat-icon>delete</mat-icon>Delete</button>
-            </div>
-          </mat-card-content>
-        </mat-card>
+        @for (b of filtered(); track b) {
+          <mat-card class="glass-card beneficiary-card">
+            <mat-card-content>
+              <button mat-icon-button class="favorite" (click)="toggleFavorite(b)"><mat-icon>{{ b.favorite ? 'star' : 'star_border' }}</mat-icon></button>
+              <h3>{{ b.beneficiaryName }}</h3>
+              <p>{{ b.beneficiaryAccountNumber }}</p>
+              <span>{{ b.bankName || 'Bank' }} {{ b.ifsc ? '- ' + b.ifsc : '' }}</span>
+              <div class="actions">
+                <a mat-button color="primary" routerLink="/transfer" [queryParams]="{ toAccountNumber: b.beneficiaryAccountNumber }"><mat-icon>send</mat-icon>Transfer</a>
+                <button mat-button (click)="openDialog(b)"><mat-icon>edit</mat-icon>Edit</button>
+                <button mat-button color="warn" (click)="remove(b)"><mat-icon>delete</mat-icon>Delete</button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
       </div>
     </section>
-  `,
-  styles: [`
+    `,
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .beneficiaries-page { display: grid; gap: 20px; }
     .page-heading { display:flex; justify-content:space-between; align-items:center; gap:16px; }
     .eyebrow { margin:0 0 6px; color:#0f766e; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }

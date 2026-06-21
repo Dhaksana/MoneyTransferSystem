@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { BankingApiService } from './banking-api.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('BankingApiService', () => {
   let service: BankingApiService;
@@ -8,12 +9,14 @@ describe('BankingApiService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+    imports: [],
+    providers: [
         BankingApiService,
-        { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' }
-      ]
-    });
+        { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' },
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+});
     service = TestBed.inject(BankingApiService);
     httpMock = TestBed.inject(HttpTestingController);
   });

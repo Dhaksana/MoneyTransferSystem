@@ -83,7 +83,7 @@ h1, h2, h3, h4 {
 }
 
 .mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-color: var(--neutral-800) !important;
+  --mat-snackbar-container-color: var(--neutral-800) !important;
 }
 
 ::-webkit-scrollbar { width: 6px; }

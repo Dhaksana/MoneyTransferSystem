@@ -1,29 +1,32 @@
-<ng-container *ngIf="auth.isLoggedIn$ | async; else publicShell">
+@if (auth.isLoggedIn$ | async) {
   <mat-sidenav-container class="bank-shell">
     <mat-sidenav mode="side" opened class="bank-sidebar" [class.collapsed]="collapsed">
       <div class="brand-block">
         <span class="brand-mark">M</span>
-        <div class="brand-copy" *ngIf="!collapsed">
-          <strong>Money-ger</strong>
-          <span>Private Banking</span>
-        </div>
+        @if (!collapsed) {
+          <div class="brand-copy">
+            <strong>Money-ger</strong>
+            <span>Private Banking</span>
+          </div>
+        }
       </div>
-
       <button mat-icon-button class="collapse-btn" (click)="collapsed = !collapsed" matTooltip="Toggle navigation">
         <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
       </button>
-
       <nav class="nav-stack">
-        <a *ngFor="let item of navItems"
-           [routerLink]="item.route"
-           routerLinkActive="active"
-           matTooltip="{{ collapsed ? item.label : '' }}">
-          <mat-icon>{{ item.icon }}</mat-icon>
-          <span *ngIf="!collapsed">{{ item.label }}</span>
-        </a>
+        @for (item of navItems; track item) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            matTooltip="{{ collapsed ? item.label : '' }}">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            @if (!collapsed) {
+              <span>{{ item.label }}</span>
+            }
+          </a>
+        }
       </nav>
     </mat-sidenav>
-
     <mat-sidenav-content>
       <mat-toolbar class="topbar">
         <div class="topbar-title">
@@ -35,13 +38,15 @@
           <mat-icon [matBadge]="notifications.unreadCount" [matBadgeHidden]="notifications.unreadCount === 0" matBadgeColor="accent">notifications</mat-icon>
         </button>
         <mat-menu #notificationMenu="matMenu" class="notification-menu">
-          <ng-container *ngIf="notifications.notifications$ | async as items">
-            <button mat-menu-item *ngFor="let item of items.slice(0, 6)" (click)="notifications.markRead(item)">
-              <mat-icon>{{ item.read ? 'notifications_none' : 'fiber_manual_record' }}</mat-icon>
-              <span>{{ item.message }}</span>
-            </button>
+          @if (notifications.notifications$ | async; as items) {
+            @for (item of items.slice(0, 6); track item) {
+              <button mat-menu-item (click)="notifications.markRead(item)">
+                <mat-icon>{{ item.read ? 'notifications_none' : 'fiber_manual_record' }}</mat-icon>
+                <span>{{ item.message }}</span>
+              </button>
+            }
             <button mat-menu-item routerLink="/notifications"><mat-icon>inbox</mat-icon><span>View all notifications</span></button>
-          </ng-container>
+          }
         </mat-menu>
         <button mat-button [matMenuTriggerFor]="userMenu" class="profile-trigger">
           <span class="avatar">{{ auth.userName.charAt(0).toUpperCase() }}</span>
@@ -53,16 +58,14 @@
           <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Logout</span></button>
         </mat-menu>
       </mat-toolbar>
-
       <main class="workspace">
         <router-outlet></router-outlet>
       </main>
     </mat-sidenav-content>
   </mat-sidenav-container>
-</ng-container>
-
-<ng-template #publicShell>
+} @else {
   <main class="public-shell">
     <router-outlet></router-outlet>
   </main>
-</ng-template>
+}
+

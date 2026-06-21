@@ -12,6 +12,7 @@ export class NotificationService implements OnDestroy {
   private authSub: Subscription;
 
   constructor(private api: BankingApiService, private auth: AuthService) {
+    console.log('[MTS] NotificationService constructed, subscribing to auth.isLoggedIn$');
     this.authSub = this.auth.isLoggedIn$.subscribe((loggedIn) => {
       if (loggedIn) {
         this.load();

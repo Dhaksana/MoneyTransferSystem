@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -8,12 +9,14 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [
+    imports: [],
+    providers: [
         AuthService,
-        { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' }
-      ]
-    });
+        { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' },
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClientTesting()
+    ]
+});
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
     localStorage.clear();

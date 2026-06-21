@@ -1,7 +1,8 @@
 // main.ts
+console.log('[MTS] main.ts loaded, starting bootstrap...');
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { AuthInterceptor } from './app/services/auth.interceptor';
@@ -11,11 +12,14 @@ import { routes } from './app/app.routes';
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     provideAnimations(),
 
-    // ✅ Set your backend base (include /api/v1 so FE paths stay simple)
-    { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' }
-    ,{ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: 'API_BASE_URL', useValue: 'http://localhost:8080/api/v1' },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
-}).catch(console.error);
+}).then(() => {
+  console.log('[MTS] Angular bootstrap SUCCESS');
+}).catch((err) => {
+  console.error('[MTS] Angular bootstrap FAILED:', err);
+});

@@ -9,6 +9,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.auth.token;
+    console.log('[MTS] AuthInterceptor intercepting:', req.method, req.url, 'hasToken:', !!token);
     if (!token) return next.handle(req);
 
     const cloned = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });

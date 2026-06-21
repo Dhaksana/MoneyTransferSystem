@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -10,11 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-welcome',
-  standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
-  templateUrl: './welcome.component.html',
-  styleUrls: ['./welcome.component.css']
+    selector: 'app-welcome',
+    imports: [FormsModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule],
+    templateUrl: './welcome.component.html',
+    changeDetection: ChangeDetectionStrategy.Default,
+    styleUrls: ['./welcome.component.css']
 })
 export class WelcomeComponent {
   private auth = inject(AuthService);
@@ -57,29 +57,45 @@ export class WelcomeComponent {
   }
 
   onLogin(f: NgForm) {
-    if (f.invalid) return;
+    if (f.invalid) { console.log('[MTS] Welcome: login form invalid'); return; }
+    console.log('[MTS] Welcome: onLogin called, username:', this.loginUsername);
     this.loginLoading = true;
     this.loginError = null;
 
     this.auth.login(this.loginUsername, this.loginPassword).subscribe({
-      next: () => this.router.navigateByUrl('/profile'),
+      next: () => {
+        console.log('[MTS] Welcome: login succeeded, navigating to /profile');
+        this.router.navigateByUrl('/profile');
+      },
       error: (e: Error) => {
+        console.error('[MTS] Welcome: login failed:', e.message);
         this.loginError = e.message || 'Login failed';
         this.loginLoading = false;
+      },
+      complete: () => {
+        console.log('[MTS] Welcome: login observable completed');
       }
     });
   }
 
   onSignup(f: NgForm) {
-    if (f.invalid) return;
+    if (f.invalid) { console.log('[MTS] Welcome: signup form invalid'); return; }
+    console.log('[MTS] Welcome: onSignup called, username:', this.signupUsername);
     this.signupLoading = true;
     this.signupError = null;
 
     this.auth.register(this.signupUsername, this.signupPassword, this.signupHolderName).subscribe({
-      next: () => this.router.navigateByUrl('/profile'),
+      next: () => {
+        console.log('[MTS] Welcome: signup succeeded, navigating to /profile');
+        this.router.navigateByUrl('/profile');
+      },
       error: (e: Error) => {
+        console.error('[MTS] Welcome: signup failed:', e.message);
         this.signupError = e.message || 'Registration failed';
         this.signupLoading = false;
+      },
+      complete: () => {
+        console.log('[MTS] Welcome: signup observable completed');
       }
     });
   }

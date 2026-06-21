@@ -1,5 +1,5 @@
 // src/app/profile/profile.component.ts
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BankingApiService } from '../services/banking-api.service';
@@ -12,11 +12,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-  selector: 'app-profile',
-  standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
-  templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css'],
+    selector: 'app-profile',
+    imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
+    templateUrl: './profile.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   constructor(

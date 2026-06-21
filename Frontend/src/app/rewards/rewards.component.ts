@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,10 +6,9 @@ import { MatTableModule } from '@angular/material/table';
 import { BankingApiService, RewardHistory, RewardSummary } from '../services/banking-api.service';
 
 @Component({
-  selector: 'app-rewards',
-  standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatTableModule],
-  template: `
+    selector: 'app-rewards',
+    imports: [CommonModule, MatCardModule, MatIconModule, MatTableModule],
+    template: `
     <section class="rewards-page">
       <div class="page-heading"><p class="eyebrow">Loyalty</p><h1>Reward points</h1></div>
       <div class="kpi-grid">
@@ -31,7 +30,8 @@ import { BankingApiService, RewardHistory, RewardSummary } from '../services/ban
       </mat-card>
     </section>
   `,
-  styles: [`
+    changeDetection: ChangeDetectionStrategy.Eager,
+    styles: [`
     .rewards-page { display:grid; gap:22px; }
     .eyebrow { margin:0 0 6px; color:#0f766e; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
     h1 { margin:0; color:#0f2742; font:700 32px/1.15 Poppins, Inter, sans-serif; }
